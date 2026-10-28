@@ -22,12 +22,21 @@ tms::signals::IntersectionSignalConfig cfg() {
     c.all_red_s = 1; c.adaptive.min_green_s = 5; c.adaptive.max_green_s = 8; c.adaptive.extension_threshold = 1;
     return c;
 }
-void testRoutes() {
+void testRoutesAndNetworkValidation() {
     auto n = makeNetwork();
     require(n.isValidRoute({"A", "B", "C"}), "connected route valid");
     require(!n.isValidRoute({}), "empty route invalid");
     require(!n.isValidRoute({"A", "C"}), "missing road invalid");
     require(!n.isValidRoute({"A", "Z"}), "unknown intersection invalid");
+    bool threw = false;
+    try { n.addIntersection(Intersection("A")); } catch (const std::invalid_argument&) { threw = true; }
+    require(threw, "duplicate intersection rejected");
+    threw = false;
+    try { n.addRoad(Road("missing-endpoint", "A", "Z", 1)); } catch (const std::invalid_argument&) { threw = true; }
+    require(threw, "road with unknown endpoint rejected");
+    threw = false;
+    try { n.addRoad(Road("duplicate-road", "A", "B", 1)); } catch (const std::invalid_argument&) { threw = true; }
+    require(threw, "duplicate directed road rejected");
 }
 void testMovement() {
     Simulation s(makeNetwork()); s.addVehicle(Vehicle("V1", {"A", "B", "C"}));
@@ -136,7 +145,7 @@ void testIntegrationAndInvalidLog() {
 }
 int main() {
     try {
-        testRoutes(); testMovement(); testRedAndBlockedQueues(); testInvalidRouteAndIdentifiers();
+        testRoutesAndNetworkValidation(); testMovement(); testRedAndBlockedQueues(); testInvalidRouteAndIdentifiers();
         testConstructorBoundaries(); testSummaryEmptyShortAndNormal(); testConfigValidationAndParser();
         testFixedTime(); testAdaptive(); testEmergency(); testIntegrationAndInvalidLog();
         std::cout << "All simulation and signal tests passed.\n"; return EXIT_SUCCESS;
