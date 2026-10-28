@@ -18,7 +18,7 @@ jobs:
         uses: lukka/get-cmake@latest
 
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
 
       - name: Build
         run: cmake --build build --parallel 2
@@ -31,3 +31,34 @@ jobs:
 
       - name: Run strategy comparison
         run: ./build/strategy_comparison
+
+      - name: Repeat demos to check for crashes or leaked run state
+        shell: bash
+        run: |
+          for run in {1..10}; do
+            ./build/traffic_sim > /dev/null
+            ./build/strategy_comparison > /dev/null
+          done
+          echo "Both executables completed 10 consecutive runs."
+
+  sanitizers:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Configure AddressSanitizer and UndefinedBehaviorSanitizer build
+        run: >-
+          cmake -S . -B build-sanitize
+          -DCMAKE_BUILD_TYPE=Debug
+          -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer"
+          -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+
+      - name: Build sanitized targets
+        run: cmake --build build-sanitize --parallel 2
+
+      - name: Run sanitized tests
+        run: ctest --test-dir build-sanitize --output-on-failure
