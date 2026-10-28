@@ -31,9 +31,6 @@ void Simulation::refreshSignalQueues() {
 void Simulation::step() {
     lastStepStats_ = {};
     refreshSignalQueues();
-    signalTimeRemainder_ += stepSeconds_;
-    const int seconds=static_cast<int>(signalTimeRemainder_);
-    if (seconds>0) { signalManager_.tick(seconds); signalTimeRemainder_-=seconds; }
     for (auto& v : vehicles_) {
         if (v.hasArrived()) continue;
         const auto* current=network_.findIntersection(v.currentIntersection());
@@ -46,6 +43,10 @@ void Simulation::step() {
         v.moveToNextIntersection();
         if (v.hasArrived()) { ++lastStepStats_.throughput; ++totalArrived_; }
     }
+    // Advance signal time after this step's movements so a green phase lasts its full duration.
+    signalTimeRemainder_ += stepSeconds_;
+    const int seconds=static_cast<int>(signalTimeRemainder_);
+    if (seconds>0) { signalManager_.tick(seconds); signalTimeRemainder_-=seconds; }
     for (const auto& v : vehicles_) {
         if (!v.hasArrived()) ++lastStepStats_.activeVehicles;
         lastStepStats_.totalWaitingTimeSeconds+=v.waitingTimeSeconds();
