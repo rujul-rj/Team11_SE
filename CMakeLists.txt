@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 add_library(traffic_core
     src/Road.cpp src/Intersection.cpp src/Vehicle.cpp src/TrafficNetwork.cpp
-    src/Simulation.cpp signal.cpp signal_config_parser.cpp)
+    src/Simulation.cpp tms/signals/signal.cpp tms/signals/signal_config_parser.cpp)
 target_include_directories(traffic_core PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR})
 if(MSVC)
