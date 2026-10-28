@@ -1,70 +1,21 @@
 #include "Simulation.h"
+#include "tms/signals/signal.hpp"
 #include <cstdlib>
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
-
 namespace {
-void require(bool condition, const char* message) {
-    if (!condition) throw std::runtime_error(message);
+void require(bool c,const char* m){if(!c)throw std::runtime_error(m);}
+TrafficNetwork makeNetwork(){TrafficNetwork n;n.addIntersection(Intersection("A"));n.addIntersection(Intersection("B"));n.addIntersection(Intersection("C"));n.addRoad(Road("AB","A","B",2));n.addRoad(Road("BC","B","C",1));return n;}
+tms::signals::IntersectionSignalConfig cfg(){using namespace tms::signals;IntersectionSignalConfig c;c.intersection_id="A";c.phases={{"NS",{"AB"},5,2},{"EW",{"AX"},7,2}};c.all_red_s=1;c.adaptive.min_green_s=5;c.adaptive.max_green_s=8;c.adaptive.extension_threshold=1;return c;}
+void testRoutes(){auto n=makeNetwork();require(n.isValidRoute({"A","B","C"}),"connected route valid");require(!n.isValidRoute({"A","C"}),"missing road invalid");require(!n.isValidRoute({"A","Z"}),"unknown intersection invalid");}
+void testMovement(){Simulation s(makeNetwork());s.addVehicle(Vehicle("V1",{"A","B","C"}));s.step();require(s.totalArrived()==0,"vehicle traverses one road per step");s.step();require(s.totalArrived()==1,"vehicle arrives after second road");}
+void testRedAndBlockedQueues(){Simulation s(makeNetwork());s.addVehicle(Vehicle("V1",{"A","B","C"}));s.setSignal("A",SignalState::Red);s.step();require(s.lastStepStats().queuedVehicles==1,"red queues vehicle");require(s.vehicles().front().waitingTimeSeconds()==1.0,"waiting time increases");Simulation b(makeNetwork());b.addVehicle(Vehicle("V2",{"A","B"}));b.setRoadBlocked("A","B",true);b.step();require(b.lastStepStats().queuedVehicles==1,"blocked road queues vehicle");}
+void testInvalidRoute(){Simulation s(makeNetwork());bool threw=false;try{s.addVehicle(Vehicle("V1",{"A","C"}));}catch(const std::invalid_argument&){threw=true;}require(threw,"invalid route rejected");}
+void testConfigValidationAndParser(){using namespace tms::signals;auto c=cfg();require(validate(c).ok,"valid config accepted");c.phases[0].green_s=1;require(!validate(c).ok,"invalid green rejected");std::istringstream in("intersection A strategy fixed all_red 1\nphase A NS green 5 yellow 2 roads AB\nphase A EW green 7 yellow 2 roads AX\n");require(parse_signal_config(in).ok(),"valid config parses");std::istringstream bad("intersection A strategy unknown\n");require(!parse_signal_config(bad).ok(),"bad strategy rejected");}
+void testFixedTime(){using namespace tms::signals;SignalController c(cfg());require(c.state("AB")==SignalState::GREEN,"initial phase green");c.tick(5);require(c.stage()==Stage::YELLOW,"green ends on schedule");require(c.invariants_hold(),"yellow invariant");c.tick(2);require(c.stage()==Stage::ALL_RED,"yellow then all-red");require(c.state("AB")==SignalState::RED,"all-red stops approach");c.tick(1);require(c.state("AX")==SignalState::GREEN,"next phase after clearance");require(c.invariants_hold(),"transition invariant");}
+void testAdaptive(){using namespace tms::signals;auto x=cfg();x.strategy=Strategy::ADAPTIVE;SignalController c(x);require(c.set_queue_length("AB",4),"queue accepted");c.tick(5);require(c.stage()==Stage::GREEN,"high queue extends green");require(c.set_queue_length("AB",0),"queue clears");c.tick(1);require(c.stage()==Stage::YELLOW,"adaptive green ends below threshold");}
+void testEmergency(){using namespace tms::signals;SignalController c(cfg());require(c.request_emergency("AX"),"emergency accepted");c.tick(1);require(c.stage()==Stage::YELLOW,"emergency uses yellow");require(c.invariants_hold(),"safe yellow transition");c.tick(2);require(c.stage()==Stage::ALL_RED,"emergency uses all-red");c.tick(1);require(c.state("AX")==SignalState::GREEN,"emergency approach gets green");require(c.invariants_hold(),"safe emergency green");require(c.clear_emergency("AX"),"emergency cleared");}
+void testIntegrationAndInvalidLog(){using namespace tms::signals;auto n=makeNetwork();n.addRoad(Road("AX","A","C",1));Simulation s(n);require(s.configureSignal(cfg()).ok,"signal installs for valid outgoing roads");s.addVehicle(Vehicle("V1",{"A","B"}));s.step();require(s.totalArrived()==1,"green controller permits movement");SignalManager m;auto invalid=cfg();invalid.phases[0].yellow_s=0;require(!m.configure(invalid).ok,"invalid config rejected");require(!m.has("A"),"invalid config not applied");require(!m.invalid_attempt_log().empty(),"invalid config logged");}
 }
-TrafficNetwork makeNetwork() {
-    TrafficNetwork network;
-    network.addIntersection(Intersection("A"));
-    network.addIntersection(Intersection("B"));
-    network.addIntersection(Intersection("C"));
-    network.addRoad(Road("AB", "A", "B", 2));
-    network.addRoad(Road("BC", "B", "C", 1));
-    return network;
-}
-void testValidRoute() {
-    auto network = makeNetwork();
-    require(network.isValidRoute({"A", "B", "C"}), "Connected route should be valid");
-    require(!network.isValidRoute({"A", "C"}), "Missing road should make route invalid");
-    require(!network.isValidRoute({"A", "Z"}), "Unknown intersection should make route invalid");
-}
-void testMovementAndArrival() {
-    Simulation sim(makeNetwork());
-    sim.addVehicle(Vehicle("V1", {"A", "B", "C"}));
-    sim.step();
-    require(sim.totalArrived() == 0, "Vehicle should not arrive after first road");
-    sim.step();
-    require(sim.totalArrived() == 1, "Vehicle should arrive after second road");
-}
-void testRedSignalQueuesVehicle() {
-    Simulation sim(makeNetwork());
-    sim.addVehicle(Vehicle("V1", {"A", "B", "C"}));
-    sim.setSignal("A", SignalState::Red);
-    sim.step();
-    require(sim.lastStepStats().queuedVehicles == 1, "Red signal should queue vehicle");
-    require(sim.vehicles().front().waitingTimeSeconds() == 1.0, "Waiting time should increase");
-}
-void testBlockedRoadQueuesVehicle() {
-    Simulation sim(makeNetwork());
-    sim.addVehicle(Vehicle("V1", {"A", "B"}));
-    sim.setRoadBlocked("A", "B", true);
-    sim.step();
-    require(sim.lastStepStats().queuedVehicles == 1, "Blocked road should queue vehicle");
-}
-void testRejectInvalidVehicleRoute() {
-    Simulation sim(makeNetwork());
-    bool threw = false;
-    try { sim.addVehicle(Vehicle("V1", {"A", "C"})); }
-    catch (const std::invalid_argument&) { threw = true; }
-    require(threw, "Invalid route should be rejected");
-}
-}
-
-int main() {
-    try {
-        testValidRoute();
-        testMovementAndArrival();
-        testRedSignalQueuesVehicle();
-        testBlockedRoadQueuesVehicle();
-        testRejectInvalidVehicleRoute();
-        std::cout << "All simulation tests passed.\n";
-        return EXIT_SUCCESS;
-    } catch (const std::exception& ex) {
-        std::cerr << "TEST FAILURE: " << ex.what() << '\n';
-        return EXIT_FAILURE;
-    }
-}
+int main(){try{testRoutes();testMovement();testRedAndBlockedQueues();testInvalidRoute();testConfigValidationAndParser();testFixedTime();testAdaptive();testEmergency();testIntegrationAndInvalidLog();std::cout<<"All simulation and signal tests passed.\n";return EXIT_SUCCESS;}catch(const std::exception& e){std::cerr<<"TEST FAILURE: "<<e.what()<<'\n';return EXIT_FAILURE;}}
