@@ -1,4 +1,5 @@
 #include "Simulation.h"
+#include <iomanip>
 #include <iostream>
 
 int main() {
@@ -13,8 +14,6 @@ int main() {
         Simulation simulation(network, 1.0);
         simulation.addVehicle(Vehicle("V1", {"A", "B", "C"}));
         simulation.addVehicle(Vehicle("V2", {"A", "B", "C"}));
-
-        // Demonstrate a red signal queue at B.
         simulation.setSignal("B", SignalState::Red);
 
         std::cout << "Traffic Management System Simulation\n";
@@ -31,6 +30,18 @@ int main() {
                       << " | accumulated wait(s)=" << stats.totalWaitingTimeSeconds
                       << '\n';
         }
+
+        const auto summary = simulation.summary();
+        std::cout << "\nEnd-of-run summary\n"
+                  << "Steps executed: " << summary.stepsExecuted << '\n'
+                  << "Vehicles added: " << summary.vehiclesAdded << '\n'
+                  << "Vehicles arrived: " << summary.totalArrived << '\n'
+                  << "Active vehicles: " << summary.activeVehicles << '\n'
+                  << std::fixed << std::setprecision(2)
+                  << "Total waiting time (vehicle-seconds): " << summary.totalWaitingTimeSeconds << '\n'
+                  << "Average waiting time (seconds/vehicle): " << summary.averageWaitingTimeSeconds << '\n'
+                  << "Average queue length (vehicles/step): " << summary.averageQueueLength << '\n'
+                  << "Throughput (vehicles/second): " << summary.throughputVehiclesPerSecond << '\n';
         return 0;
     } catch (const std::exception& ex) {
         std::cerr << "Simulation error: " << ex.what() << '\n';

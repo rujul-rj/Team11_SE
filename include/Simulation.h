@@ -5,12 +5,25 @@
 #include <cstddef>
 #include <string>
 #include <vector>
+
 struct SimulationStats {
     std::size_t activeVehicles{0};
     std::size_t queuedVehicles{0};
     std::size_t throughput{0};
     double totalWaitingTimeSeconds{0.0};
 };
+
+struct SimulationSummary {
+    std::size_t stepsExecuted{0};
+    std::size_t vehiclesAdded{0};
+    std::size_t totalArrived{0};
+    std::size_t activeVehicles{0};
+    double totalWaitingTimeSeconds{0.0};
+    double averageWaitingTimeSeconds{0.0};
+    double averageQueueLength{0.0};
+    double throughputVehiclesPerSecond{0.0};
+};
+
 class Simulation {
 public:
     explicit Simulation(TrafficNetwork network, double stepSeconds = 1.0);
@@ -28,6 +41,8 @@ public:
     const std::vector<Vehicle>& vehicles() const noexcept;
     const SimulationStats& lastStepStats() const noexcept;
     std::size_t totalArrived() const noexcept;
+    std::size_t stepsExecuted() const noexcept;
+    SimulationSummary summary() const noexcept;
 private:
     void refreshSignalQueues();
     TrafficNetwork network_;
@@ -36,5 +51,8 @@ private:
     double signalTimeRemainder_{0.0};
     tms::signals::SignalManager signalManager_;
     std::size_t totalArrived_{0};
+    std::size_t stepsExecuted_{0};
+    std::size_t cumulativeQueuedVehicles_{0};
+    double cumulativeWaitingTimeSeconds_{0.0};
     SimulationStats lastStepStats_;
 };
