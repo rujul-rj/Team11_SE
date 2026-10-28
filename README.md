@@ -1,52 +1,112 @@
-# Team 11 Traffic Management System — C++ Starter
+# Team 11 Traffic Management System
 
-This is a small, runnable C++17 baseline for the first implementation tasks:
-- Road, lane, and intersection model (Issue #3)
-- Vehicle generation and route validation (Issue #5)
-- Vehicle movement and queues (Issue #6)
-- Modular components with a lightweight test executable (related to #8 and #31)
+A C++17 **traffic simulation** for experimenting with road networks, vehicles, signal control and traffic incidents. This is not a controller for real-world traffic infrastructure.
 
-It is a simulation, not a controller for real traffic signals. Signal control is intentionally simple so it can be integrated with the team's fixed-time/adaptive signal work.
+## Prerequisites
 
-## Build and run
+- C++17 compiler (GCC 9+, Clang 10+, or a current Visual Studio C++ toolchain)
+- CMake 3.16+
+- Git
 
-### Windows (Visual Studio Build Tools or MinGW with CMake)
-From this folder:
+No third-party test framework is currently required; the repository uses a dependency-free C++ test executable registered with CTest.
+
+## Clean build, test and run
+
+Run these commands from the repository root.
+
+### Linux / macOS / WSL (GCC or Clang)
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build --parallel
+ctest --test-dir build --output-on-failure
+./build/traffic_sim
+```
+
+### Windows PowerShell (Visual Studio generator)
 
 ```powershell
 cmake -S . -B build
 cmake --build build --config Release
+ctest --test-dir build -C Release --output-on-failure
 .\build\Release\traffic_sim.exe
 ```
 
-For a single-config generator such as MinGW, the executable may be at `build\traffic_sim.exe`.
+For MinGW or another single-configuration generator, the executable is usually `build\traffic_sim.exe`. If CMake cannot find a compiler, install the C++ workload for Visual Studio or a GCC/Clang toolchain and reopen the terminal.
 
-### Linux / WSL
+## What is implemented
+
+- Directed roads with lane counts and intersection endpoints.
+- Route validation before a vehicle enters simulation state.
+- Vehicle movement, waiting-time accounting and queue behaviour at red signals or blocked roads.
+- Road incidents represented by blocking and unblocking a road.
+- Fixed-time/adaptive signal controllers, safe phase transitions, emergency priority and signal configuration parsing in `tms/signals/`.
+- Per-step counts and end-of-run summary statistics, including active/arrived vehicles, accumulated waiting time, average queue length and throughput.
+- Automated tests for route/configuration validation, boundaries, incidents, signal transitions and empty/short/normal summaries.
+
+Signal configuration syntax and an example are in [config/signals_example.cfg](config/signals_example.cfg) and [tms/signals/README.md](tms/signals/README.md).
+
+## Metrics definitions
+
+- **Steps executed:** number of simulation updates completed.
+- **Vehicles added / arrived / active:** total accepted vehicles, vehicles that completed their route, and vehicles not yet arrived.
+- **Total waiting time (seconds):** sum of waiting-time counters for all vehicles at the end of the run.
+- **Average waiting time (seconds per added vehicle):** total waiting time divided by vehicles added; zero when no vehicles were added.
+- **Average queue length (vehicles per step):** total queued vehicle observations divided by executed steps; zero when no steps were executed.
+- **Throughput (vehicles/second):** completed vehicles divided by simulated elapsed time (steps × configured step duration); zero for a zero-step run.
+
+These are simulation-level indicators, not calibrated predictions of real traffic.
+
+## Reliability and performance evidence
+
+Use a clean checkout and retain the output when reporting results:
+
 ```bash
-cmake -S . -B build
-cmake --build build -j
-./build/traffic_sim
-```
-
-## Run tests
-
-```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build --parallel
 ctest --test-dir build --output-on-failure
 ```
 
-## Model and behavior
+For a sanitizer build on GCC/Clang:
 
-- Roads are directed from one intersection to another and have a lane count.
-- A vehicle route is a sequence of intersection IDs; each consecutive pair must be connected by a road.
-- Vehicles move one road per simulation step when the signal at their current intersection is green and the road is not blocked.
-- At a red signal or blocked road, a vehicle remains queued at its current intersection and its waiting time increases.
-- Each simulation step updates the model and records aggregate queue length, waiting time, and throughput.
-- The demo uses deterministic vehicle arrivals for reproducible output.
+```bash
+cmake -S . -B build-asan -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+cmake --build build-asan --parallel
+ctest --test-dir build-asan --output-on-failure
+```
 
-## Important integration notes
+Record the compiler/version, operating system, commit SHA, workload (intersections, roads, vehicles and steps), elapsed wall time, number of repeated runs, failures, and sanitizer result. Do not report performance targets as met until the workload and target from the SRS have been checked and measured on the target environment.
 
-1. This is a starter implementation created because the repository ZIP provided did not include existing C++ source files. Review it with your teammates before merging.
-2. Signal timing is represented by a simple per-intersection RED/GREEN state. Replace or extend this with the team's signal-control module.
-3. Incident support is represented by blocking/unblocking a road.
-4. The demo/test harness is deliberately dependency-free. If the team requires GoogleTest, the tests can be migrated later.
-5. Add each source file to the repository, build locally, run tests, then open a pull request. Do not overwrite teammates' uncommitted local work.
+## Demo checklist
+
+1. Configure and build from a clean checkout.
+2. Run CTest and show the passing test summary.
+3. Run `traffic_sim` and explain active, queued, throughput and waiting-time output.
+4. Demonstrate an invalid route or malformed signal configuration being rejected.
+5. Block a road, show waiting, clear the incident and show movement resuming.
+6. Present the end-of-run summary and compare strategies only where the comparison workflow is implemented and has been tested.
+
+## Known limitations
+
+- The model is intentionally simplified; it does not model real-world driver behaviour, calibrated road capacity, pedestrian phases, emissions or stochastic arrivals.
+- Performance and memory-safety claims require recorded runs from the target environment; this README does not imply those measurements have already been completed.
+- Strategy comparisons must use identical network, demand, step duration and run length to be meaningful. Differences in random seeds or initial state must be documented.
+- The demo uses a small deterministic network; results should not be generalized to city-scale traffic.
+
+## Requirement-to-test traceability
+
+| Requirement / issue | Coverage |
+|---|---|
+| FR-012 / #7, #37 | Invalid and disconnected routes, unknown intersection and road IDs |
+| SEC-001 / #10, #29, #37 | Malformed configuration and parser diagnostics |
+| SEC-002 / #11, #30, #37 | Invalid lane count, invalid timing and negative queue values |
+| FR-008 / #17 | Blocked road queues vehicles; clearing the block allows movement |
+| FR-009 / #18, #38 | Per-step statistics and cumulative summary |
+| FR-010 / #19, #38 | Empty, short and normal run summary |
+| NFR-005 / #9, #28, #40 | Clean configure/build/test/run commands above |
+| NFR-001/002, SEC-003/004 / #39 | Sanitizer and repeatability procedure above; attach measured results before claiming pass |
+| PB-25 / #35 | Use the demo checklist; add the actual recording URL and freeze commit when available |
+
+## Contributing
+
+Create a feature branch, run the build and tests, and open a pull request against `main`. Do not commit generated build directories. Coordinate shared simulation interfaces with the core simulation and signal-control owners before changing them.
