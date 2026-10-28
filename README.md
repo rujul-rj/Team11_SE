@@ -46,6 +46,7 @@ For MinGW or another single-configuration generator, executables are usually und
 - Per-step statistics and end-of-run summary statistics, including active/arrived vehicles, accumulated waiting time, average queue length and throughput.
 - A deterministic `strategy_comparison` executable that runs fixed-time and adaptive signal configurations with the same network, vehicle demand, step duration and run length.
 - Automated tests for route/configuration validation, boundaries, incidents, signal transitions and empty/short/normal summaries.
+- CI checks that build the project, run tests and demos, repeat both executables 10 times, and run the test suite under AddressSanitizer/UndefinedBehaviorSanitizer.
 
 Signal configuration syntax and an example are in [config/signals_example.cfg](config/signals_example.cfg) and [tms/signals/README.md](tms/signals/README.md).
 
@@ -62,19 +63,15 @@ These are simulation-level indicators, not calibrated predictions of real traffi
 
 ## Comparing strategies
 
-Run `strategy_comparison` after building. The executable prints fixed-time and adaptive results side by side for the same deterministic four-intersection network, 10 vehicles, 1-second steps and 30-step run. Compare arrivals, active vehicles, total wait, average queue and throughput. The small workload demonstrates the comparison workflow; it is not evidence that one strategy is universally better or that city-scale performance targets are met.
+Run `strategy_comparison` after building. The executable prints fixed-time and adaptive results side by side for the same deterministic four-intersection network, 10 vehicles, 1-second steps and 30-step run. Compare arrivals, active vehicles, total wait, average queue and throughput.
+
+The current simplified movement model does not limit how many vehicles can traverse a road in one step based on lane capacity. As a result, the sample workload can produce identical metrics for both strategies. This demonstrates the comparison interface, not a claim that the strategies are equivalent. A meaningful strategy evaluation needs realistic per-road capacity/vehicle discharge behaviour and broader workloads.
 
 ## Reliability and performance evidence
 
-Use a clean checkout and retain the output when reporting results:
+CI builds the project, runs CTest, runs both executables, repeats each demo 10 times and runs the tests under AddressSanitizer and UndefinedBehaviorSanitizer. Review the [Actions runs](https://github.com/rujul-rj/Team11_SE/actions) for the commit-specific results.
 
-```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
-cmake --build build --parallel
-ctest --test-dir build --output-on-failure
-```
-
-For a sanitizer build on GCC/Clang:
+For a local sanitizer build on GCC/Clang:
 
 ```bash
 cmake -S . -B build-asan -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
@@ -82,7 +79,7 @@ cmake --build build-asan --parallel
 ctest --test-dir build-asan --output-on-failure
 ```
 
-Record compiler/version, operating system, commit SHA, workload (intersections, roads, vehicles and steps), elapsed wall time, number of repeated runs, failures and sanitizer result. Do not report performance targets as met until the workload and target from the SRS have been checked and measured on the target environment.
+Record compiler/version, operating system, commit SHA, workload (intersections, roads, vehicles and steps), elapsed wall time, repeated-run count, failures and sanitizer result. The CI workflow provides repeatability and sanitizer checks, but it does not yet establish that the project's SRS performance target is met. Check the exact target and workload in the SRS and measure elapsed time on the intended environment before claiming performance compliance.
 
 ## Demo checklist
 
@@ -91,20 +88,21 @@ Record compiler/version, operating system, commit SHA, workload (intersections, 
 3. Run `traffic_sim` and explain active, queued, throughput and waiting-time output.
 4. Demonstrate an invalid route or malformed signal configuration being rejected.
 5. Block a road, show waiting, clear the incident and show movement resuming.
-6. Show the end-of-run summary and run `strategy_comparison`; explain that the demand and run length are held constant.
+6. Show the end-of-run summary and run `strategy_comparison`; explain that demand and run length are held constant.
+7. Capture a roughly two-minute recording, add its real URL to the release issue, and record the actual freeze commit/tag.
 
 ## Known limitations
 
-- The model is intentionally simplified; it does not model real-world driver behaviour, calibrated road capacity, pedestrian phases, emissions or stochastic arrivals.
-- Performance and memory-safety claims require recorded runs from the target environment; this README does not imply those measurements have already been completed.
-- The comparison uses a small deterministic demand; repeat runs and broader workloads are needed before making general claims about strategy quality.
+- The model is intentionally simplified; it does not model calibrated driver behaviour, road-capacity discharge, pedestrian phases, emissions or stochastic arrivals.
+- Performance compliance requires a measured workload and comparison with the SRS target.
+- The comparison uses a small deterministic demand and currently may show identical metrics; it is not sufficient to rank strategies.
 - The demo uses a small network; results should not be generalized to city-scale traffic.
 
 ## Requirement-to-test traceability
 
 | Requirement / issue | Coverage |
 |---|---|
-| FR-012 / #7, #37 | Invalid and disconnected routes, unknown intersection and road IDs |
+| FR-012 / #7, #37 | Invalid and disconnected routes, duplicate intersection/road IDs and unknown road endpoints |
 | SEC-001 / #10, #29, #37 | Malformed configuration and parser diagnostics |
 | SEC-002 / #11, #30, #37 | Invalid lane count, invalid timing, non-finite step duration and negative queue values |
 | FR-008 / #17 | Blocked road queues vehicles; clearing the block allows movement |
@@ -112,8 +110,8 @@ Record compiler/version, operating system, commit SHA, workload (intersections, 
 | FR-010 / #19, #38 | Empty, short and normal run summary |
 | FR-011 / #20, #38 | Fixed-time/adaptive comparison under identical deterministic demand |
 | NFR-005 / #9, #28, #40 | Clean configure/build/test/run commands above |
-| NFR-001/002, SEC-003/004 / #39 | Sanitizer and repeatability procedure above; attach measured results before claiming pass |
-| PB-25 / #35 | Use the demo checklist; add the actual recording URL and freeze commit when available |
+| NFR-001/002, SEC-003/004 / #39 | CI repeated runs and sanitizer tests; SRS performance target still requires measured timing |
+| PB-25 / #35 | Demo checklist; attach the actual recording URL and freeze commit when available |
 
 ## Contributing
 
