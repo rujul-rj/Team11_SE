@@ -42,8 +42,6 @@ tms::signals::IntersectionSignalConfig cfg() {
     return config;
 }
 
-// Core network and vehicle tests.
-
 void testRoutes() {
     auto network = makeNetwork();
 
@@ -101,8 +99,6 @@ void testInvalidRoute() {
     require(threw, "Invalid vehicle route should be rejected");
 }
 
-// Automatic vehicle generation tests.
-
 void testAutomaticGenerationInterval() {
     Simulation simulation(makeNetwork());
 
@@ -159,16 +155,16 @@ void testAutomaticGenerationRejectsZeroInterval() {
     require(threw, "Generator should reject a zero interval");
 }
 
-// Teammate's signal-controller tests.
-
 void testConfigValidationAndParser() {
     using namespace tms::signals;
 
     auto config = cfg();
-    require(validate(config).ok, "Valid signal config should be accepted");
+    require(validate(config).ok,
+            "Valid signal config should be accepted");
 
     config.phases[0].green_s = 1;
-    require(!validate(config).ok, "Invalid green duration should be rejected");
+    require(!validate(config).ok,
+            "Invalid green duration should be rejected");
 
     std::istringstream input(
         "intersection A strategy fixed all_red 1\n"
@@ -188,27 +184,24 @@ void testFixedTime() {
 
     SignalController controller(cfg());
 
-    require(controller.state("AB") == SignalState::GREEN,
+    require(controller.state("AB") == tms::signals::SignalState::GREEN,
             "Initial phase should be green");
 
     controller.tick(5);
     require(controller.stage() == Stage::YELLOW,
             "Green should end on schedule");
-
     require(controller.invariants_hold(),
             "Yellow transition should preserve invariants");
 
     controller.tick(2);
     require(controller.stage() == Stage::ALL_RED,
             "Yellow should be followed by all-red");
-
-    require(controller.state("AB") == SignalState::RED,
+    require(controller.state("AB") == tms::signals::SignalState::RED,
             "All-red should stop the approach");
 
     controller.tick(1);
-    require(controller.state("AX") == SignalState::GREEN,
+    require(controller.state("AX") == tms::signals::SignalState::GREEN,
             "Next phase should start after clearance");
-
     require(controller.invariants_hold(),
             "Phase transition should preserve invariants");
 }
@@ -233,7 +226,7 @@ void testAdaptive() {
 
     controller.tick(1);
     require(controller.stage() == Stage::YELLOW,
-            "Green should end when the extension condition is no longer met");
+            "Green should end when extension condition is no longer met");
 }
 
 void testEmergency() {
@@ -247,7 +240,6 @@ void testEmergency() {
     controller.tick(1);
     require(controller.stage() == Stage::YELLOW,
             "Emergency transition should use yellow");
-
     require(controller.invariants_hold(),
             "Yellow transition should preserve invariants");
 
@@ -256,9 +248,8 @@ void testEmergency() {
             "Emergency transition should use all-red");
 
     controller.tick(1);
-    require(controller.state("AX") == SignalState::GREEN,
+    require(controller.state("AX") == tms::signals::SignalState::GREEN,
             "Emergency approach should receive green");
-
     require(controller.invariants_hold(),
             "Emergency green should preserve invariants");
 
@@ -289,10 +280,8 @@ void testIntegrationAndInvalidLog() {
 
     require(!manager.configure(invalidConfig).ok,
             "Invalid signal config should be rejected");
-
     require(!manager.has("A"),
             "Invalid config should not be applied");
-
     require(!manager.invalid_attempt_log().empty(),
             "Invalid configuration attempt should be logged");
 }
