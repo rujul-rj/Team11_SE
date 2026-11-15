@@ -6,7 +6,7 @@ Validate the integrated traffic simulation as a runnable C++17 application again
 
 ## 2. Environment record
 
-- Commit SHA: `4ca98fb5e4858d58ecad7e955f6d4ed8be7be5b8`
+- Commit SHA: `b0cd2d7c2e15beffa5dd71534432734ab897ce9f`
 - Operating system / version: GitHub-hosted Ubuntu runner
 - Compiler / version: GCC 15.2.0 (coverage build)
 - CMake version: 4.5.0 (CI)
@@ -31,7 +31,7 @@ ctest --test-dir build --output-on-failure
 | SV-02 | Execute the main simulation | Vehicle movement, queue and end-of-run summary are printed | PASS (CI) |
 | SV-03 | Configure fixed-time signal | Controller follows green, yellow and all-red sequence | PASS (automated regression) |
 | SV-04 | Configure adaptive signal | Queue information affects green extension within configured bounds | PASS (automated regression) |
-| SV-05 | Emergency vehicle request | Safe transition grants priority to the emergency approach | PASS (automated regression) |
+| SV-05 | Emergency vehicle request | Safe transition grants priority to the emergency approach | PASS (integrated emergency vehicle regression) |
 | SV-06 | Block and clear a road incident | Vehicle waits during blockage and resumes after clearance | PASS (automated regression) |
 | SV-07 | Invalid route/configuration | Invalid input is rejected and diagnostics are available | PASS (automated regression) |
 | SV-08 | Strategy comparison | Fixed-time and adaptive runs use identical topology, demand and duration | PASS (CI; identical metrics observed) |
@@ -40,12 +40,13 @@ ctest --test-dir build --output-on-failure
 
 ## 5. Measured CI outputs
 
-- Main simulation: 4 steps, 2 vehicles added, 2 arrived, 0 active; total waiting time 2.00 vehicle-seconds; average waiting time 1.00 seconds/vehicle; average queue length 0.50 vehicles/step; throughput 0.50 vehicles/second.
-- Strategy comparison (same four-intersection network, 10 vehicles, 30 one-second steps): fixed-time and adaptive each reported 10 arrived, 0 active, 40.000 vehicle-seconds total wait, 1.333 average queue and 0.333 vehicles/second throughput.
-- CTest: 1/1 test executable passed; 100% tests passed.
+- Main simulation: 12 steps, 8 vehicles added, 3 arrived and 5 active; total waiting time 43.00 vehicle-seconds; average waiting time 5.38 seconds/vehicle; average queue length 3.58 vehicles/step; throughput 0.25 vehicles/second.
+- Strategy comparison (same network, 10 vehicles, 30 one-second steps): fixed-time and adaptive each reported 10 arrived, 40.000 vehicle-seconds total wait, 1.333 average queue and 0.333 vehicles/second throughput. Metrics are identical in this simplified model; do not claim a strategy winner.
+- CTest: 1/1 test executable passed; 100% tests passed. The executable contains 17 test functions.
 - Repeated-run check: both executables completed 10 consecutive runs.
 - ASan/UBSan: build and tests passed.
-- Workflow: [run 43692422652](https://github.com/rujul-rj/Team11_SE/actions/runs/43692422652).
+- NFR-001 CI proxy: 1,000 vehicle-step updates per run, 10 runs; min 0.110 ms, average 0.113 ms, max 0.124 ms on the GitHub-hosted Ubuntu runner. This does not replace the approved reference-machine test.
+- Workflow: [run 43692880777](https://github.com/rujul-rj/Team11_SE/actions/runs/43692880777).
 
 ## 6. Limitations to disclose
 
