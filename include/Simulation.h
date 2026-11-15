@@ -7,6 +7,7 @@
 
 #include <cstddef>
 #include <map>
+#include <random>
 #include <string>
 #include <vector>
 
@@ -39,12 +40,14 @@ public:
     void configureVehicleGeneration(
         std::vector<std::vector<std::string>> routes,
         std::size_t intervalSteps,
-        std::size_t maxVehicles
+        std::size_t maxVehicles,
+        unsigned int seed = 42
     );
     void configureVehicleGeneration(
         std::vector<std::vector<std::string>> routes,
         TrafficDensity density,
-        std::size_t maxVehicles
+        std::size_t maxVehicles,
+        unsigned int seed = 42
     );
 
     void step();
@@ -111,4 +114,5 @@ private:
     std::size_t maxGeneratedVehicles_{0};
     std::size_t generatedVehicles_{0};
     std::size_t stepsSinceGeneration_{0};
+    std::mt19937 routeRandom_{42};
 };
