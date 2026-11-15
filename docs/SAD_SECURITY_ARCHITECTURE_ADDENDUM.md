@@ -5,7 +5,7 @@
 The application is a single-process C++17 simulation. Security controls are applied at configuration and module boundaries:
 
 1. **Configuration boundary:** parse_signal_config() parses line-oriented signal configuration; validate() checks identifiers, phase count, timing ranges, adaptive parameters and duplicate road assignments before configuration is installed.
-2. **Network boundary:** TrafficNetwork::addIntersection(), addRoad() and isValidRoute() reject duplicate IDs, unknown endpoints and invalid route references.
+2. **Network boundary:** parse_network_config() and TrafficNetwork::addIntersection(), addRoad() and isValidRoute() reject malformed directives, duplicate IDs, unknown endpoints, invalid lanes/capacities and invalid route references.
 3. **Simulation boundary:** Simulation rejects non-finite or non-positive time-step values, duplicate vehicle IDs, invalid routes and unknown road/intersection references.
 4. **Signal safety:** SignalController enforces GREEN → YELLOW → ALL_RED transitions; unknown roads fail safe to RED; emergency requests use the normal clearance sequence.
 5. **Diagnostics:** SignalManager records invalid configuration attempts in invalid_attempt_log(). The current log is in-memory, not a persistent audit file.
