@@ -6,7 +6,7 @@ Validate the integrated traffic simulation as a runnable C++17 application again
 
 ## 2. Environment record
 
-- Commit SHA: `b0cd2d7c2e15beffa5dd71534432734ab897ce9f`
+- Commit SHA: `a72050a2ad3c52c45bd4e3a7f838ff11369e6a09`
 - Operating system / version: GitHub-hosted Ubuntu runner
 - Compiler / version: GCC 15.2.0 (coverage build)
 - CMake version: 4.5.0 (CI)
