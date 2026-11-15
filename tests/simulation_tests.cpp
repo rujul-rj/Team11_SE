@@ -391,6 +391,17 @@ void testSignalControllerBranches() {
     config.all_red_s = 1;
     SignalController controller(config);
 
+    SignalController currentEmergency(cfg());
+    require(currentEmergency.request_emergency("AB"),
+            "emergency request for the current green approach should be accepted");
+    currentEmergency.tick(1);
+    require(currentEmergency.stage() == Stage::GREEN &&
+            currentEmergency.current_phase() == 0 &&
+            currentEmergency.state("AB") == tms::signals::SignalState::GREEN,
+            "emergency already on the current green approach should not force a phase change");
+    require(currentEmergency.clear_emergency("AB"),
+            "current-approach emergency should clear");
+
     require(controller.invariants_hold(), "initial controller invariants should hold");
     require(controller.state("AB") == tms::signals::SignalState::GREEN &&
             controller.state("AC") == tms::signals::SignalState::RED,
@@ -463,6 +474,12 @@ void testSignalControllerBranches() {
 
 void testSignalManagerFacadeBranches() {
     using namespace tms::signals;
+    SignalManager emptyManager;
+    emptyManager.set_strategy_all(Strategy::ADAPTIVE);
+    emptyManager.tick(1);
+    emptyManager.clear();
+    require(emptyManager.invalid_attempt_log().empty(),
+            "empty manager operations should be safe no-ops");
     SignalManager manager;
     std::istringstream valid(
         "intersection A strategy fixed all_red 1\n"
@@ -581,6 +598,8 @@ void testRoadConstructorAndStateBranches() {
             "unrepresentable default capacity should fail");
     require(throws([] { Road("R", "A", "B", 1, 0); }), "zero explicit capacity should fail");
     require(throws([] { Road("R", "A", "B", 0, 10); }), "zero lanes with explicit capacity should fail");
+    require(throws([] { Road("", "A", "B", 1, 10); }), "explicit-capacity constructor should reject empty ID");
+    require(throws([] { Road("R", "A", "A", 1, 10); }), "explicit-capacity constructor should reject self road");
 
     Road road("R", "A", "B", 2, 40, true);
     require(road.isBlocked() && road.capacity() == 40 && road.lanes() == 2,
@@ -696,6 +715,10 @@ void testSimulationBoundaryAndFacadeBranches() {
     validSignal.phases[1].roads = {"AC"};
     require(signalSimulation.configureSignal(validSignal).ok,
             "valid outgoing road signal config should succeed");
+    auto invalidTiming = validSignal;
+    invalidTiming.phases[0].green_s = 0;
+    require(!signalSimulation.configureSignal(invalidTiming).ok,
+            "valid network reference with invalid signal timing should fail validation");
     require(!signalSimulation.configureSignal(validSignal).ok,
             "duplicate signal controller config should fail");
     require(signalSimulation.emergencyArrived("A", "AB"),
