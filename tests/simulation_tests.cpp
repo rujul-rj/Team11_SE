@@ -294,6 +294,33 @@ void testEmergencyVehicleIntegration() {
     require(simulation.vehicles().front().waitingTimeSeconds() >= 1.0,
             "Emergency vehicle should wait for safe yellow/all-red clearance");
 }
+void testPersistentInvalidConfigurationLogging() {
+    using namespace tms::signals;
+    SignalManager manager;
+    std::ostringstream persisted;
+    manager.set_log_sink([&persisted](const std::string& line) {
+        persisted << line << '\\n';
+    });
+
+    auto invalid = cfg();
+    invalid.phases[0].green_s = 0;
+    const auto first = manager.configure(invalid);
+    require(!first.ok, "invalid signal configuration should be rejected");
+    require(manager.invalid_attempt_log().size() == 1,
+            "invalid configuration should create a diagnostic entry");
+
+    std::istringstream malformed("intersection A strategy fixed all_red 1\\nphase A X green nope yellow 2 roads AB\\n");
+    const auto second = manager.configure_from_stream(malformed, "source\\nFORGED");
+    require(!second.ok, "malformed signal file should be rejected");
+    require(manager.invalid_attempt_log().size() >= 2,
+            "each invalid attempt should be recorded");
+    require(persisted.str().find("INVALID_CONFIG") != std::string::npos,
+            "log sink should receive invalid configuration entries");
+    require(persisted.str().find("\\nFORGED") == std::string::npos,
+            "newline log injection should be neutralized");
+    require(manager.invalid_attempt_log().front().find("T") != std::string::npos,
+            "log entries should include a timestamp");
+}
 void testIntegrationAndInvalidLog() {
     using namespace tms::signals;
     auto n = makeNetwork(); n.addRoad(Road("AX", "A", "C", 1)); Simulation s(n);
@@ -313,7 +340,7 @@ int main() {
         testAutomaticGenerationRejectsInvalidRoute(); testAutomaticGenerationRejectsZeroInterval();
         testGenerationSeedReproducibility(); testTrafficDensityLevels();
         testConstructorBoundaries(); testSummaryEmptyShortAndNormal(); testConfigValidationAndParser();
-        testFixedTime(); testAdaptive(); testEmergency(); testEmergencyVehicleIntegration(); testIntegrationAndInvalidLog();
+        testFixedTime(); testAdaptive(); testEmergency(); testEmergencyVehicleIntegration(); testPersistentInvalidConfigurationLogging(); testIntegrationAndInvalidLog();
         std::cout << "All simulation, generation, summary, and signal tests passed.\n"; return EXIT_SUCCESS;
     } catch (const std::exception& e) {
         std::cerr << "TEST FAILURE: " << e.what() << '\n'; return EXIT_FAILURE;
