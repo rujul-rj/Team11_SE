@@ -2,7 +2,7 @@
 
 ## 1. Scope
 
-This report inventories the dependency-free C++ test executable registered with CTest. The suite exercises network and route validation, vehicle movement, queue behaviour, signal configuration, fixed-time and adaptive control, emergency priority, incident recovery and simulation summaries.
+This report inventories the dependency-free C++ test executable registered with CTest. The suite contains 17 test functions covering network and route validation, vehicle movement, queue behaviour, traffic-density generation, signal configuration, fixed-time and adaptive control, emergency controller behaviour, integrated emergency-vehicle priority, incident recovery and simulation summaries.
 
 ## 2. Test environment
 
@@ -19,16 +19,16 @@ Record the actual compiler, version, runner OS, commit SHA and Actions run URL f
 
 ## 3. Test groups in the suite
 
-1. Route and network validation — valid/invalid routes, duplicate intersections/roads and unknown endpoints.
-2. Vehicle movement — progression over connected roads and arrival accounting.
-3. Red-signal and blocked-road queues — waiting-time accounting and incident recovery.
-4. Invalid route and identifiers — duplicate vehicle IDs and unknown signal/road references.
-5. Constructor boundaries — zero lanes, empty identifiers, zero and non-finite simulation step.
-6. Empty, short and normal summaries — counts, division-by-zero protection and finite throughput.
-7. Signal configuration and parser — valid configuration, invalid timings, malformed values and undeclared intersections.
-8. Fixed-time controller — green/yellow/all-red sequence and invariants.
-9. Adaptive controller — queue-sensitive green extension and invalid queue rejection.
-10. Emergency priority — safe transition and emergency clearance.
+1. Route and network validation — connected/disconnected routes, duplicate intersections/roads and unknown endpoints.
+2. Vehicle movement and queues — progression, red-signal waiting, blocked-road waiting and recovery.
+3. Invalid routes and identifiers — duplicate vehicle IDs and unknown signal/road references.
+4. Constructor boundaries — zero lanes, empty identifiers, zero and non-finite simulation step.
+5. End-of-run summaries — empty, short and normal runs; division-by-zero protection and finite throughput.
+6. Automatic generation interval and maximum — generated IDs, configured interval, maximum count and invalid generation routes/intervals.
+7. Traffic-density levels — LOW, MEDIUM and HIGH generate increasing vehicle counts over the same duration.
+8. Signal configuration and parser — valid configuration, invalid timings, malformed values and undeclared intersections.
+9. Fixed-time and adaptive controllers — safe phase sequence, queue-sensitive extension and invariants.
+10. Emergency controller and integrated vehicle priority — emergency clearance sequence and arrival at destination.
 11. Integration and invalid-configuration logging — network/controller integration and rejected configuration diagnostics.
 
 ## 4. Execution
