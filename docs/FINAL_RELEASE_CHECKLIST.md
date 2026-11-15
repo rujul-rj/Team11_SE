@@ -33,7 +33,7 @@
 - [x] Aggregate core branch coverage meets the 70% target (70.02%); signal.cpp is 67.0% individually, so confirm whether faculty expects the threshold per module.
 - [x] Implement timestamped, newline-sanitized SEC-004 logging for signal and network configuration errors; automated tests verify the log sink and injection handling.
 - [ ] Run the full three-entry/no-false-entry test on the designated reference environment and attach the actual log file as evidence.
-- [ ] Complete the three-first-time-user NFR-005 usability walkthrough and record steps/results.
+- [ ] Record one operator walkthrough demonstrating a basic run in no more than three configuration steps, and capture the steps/results.
 
 ## Presentation and viva (non-video)
 - [x] Documented the architecture, API boundaries, known deviations and capacity-model assumptions.
