@@ -6,7 +6,7 @@ Validate the integrated traffic simulation as a runnable C++17 application again
 
 ## 2. Environment record
 
-- Commit SHA: `a72050a2ad3c52c45bd4e3a7f838ff11369e6a09`
+- Commit SHA: `6611142d24af6c5f02a2dd65f143a3dc60ddf21c`
 - Operating system / version: GitHub-hosted Ubuntu runner
 - Compiler / version: GCC 15.2.0 (coverage build)
 - CMake version: 4.5.0 (CI)
@@ -45,8 +45,8 @@ ctest --test-dir build --output-on-failure
 - CTest: 1/1 test executable passed; 100% tests passed. The executable contains 17 test functions.
 - Repeated-run check: both executables completed 10 consecutive runs.
 - ASan/UBSan: build and tests passed.
-- NFR-001 performance: 1,000 vehicle-step updates, 10 runs per scenario. TC-013.1 baseline: min 0.078 / avg 0.082 / max 0.092 ms; TC-013.2 adaptive: min 0.083 / avg 0.084 / max 0.096 ms; TC-013.3 incidents+emergency: min 0.064 / avg 0.067 / max 0.083 ms. Runner: x86_64 Ubuntu VM, 4 CPUs, 15 GiB RAM, AMD EPYC 9V45, GCC 15.2.0, CMake 4.5.0. This meets the STP compute baseline but is not the designated team desktop/laptop.
-- Workflow: [run 43694337930](https://github.com/rujul-rj/Team11_SE/actions/runs/43693133717).
+- NFR-001 performance: 1,000 vehicle-step updates, 10 runs per scenario. TC-013.1 baseline: min 0.132 / avg 0.141 / max 0.156 ms; TC-013.2 adaptive: min 0.143 / avg 0.149 / max 0.159 ms; TC-013.3 incidents+emergency: min 0.117 / avg 0.120 / max 0.125 ms. Runner: x86_64 Ubuntu VM, 4 CPUs, 15 GiB RAM, Intel Xeon Platinum 8573C, GCC 15.2.0, CMake 4.5.0. This meets the STP compute baseline but is not the designated team desktop/laptop.
+- Workflow: [run 43694595234](https://github.com/rujul-rj/Team11_SE/actions/runs/43693133717).
 
 ## 6. Limitations to disclose
 
