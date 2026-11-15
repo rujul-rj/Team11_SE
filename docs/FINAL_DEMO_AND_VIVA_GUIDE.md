@@ -33,7 +33,7 @@ Interpretation: adaptive control reduced waiting time and average queue for this
 - Runtime safety: AddressSanitizer and UndefinedBehaviorSanitizer.
 - Performance: TC-013.1 baseline, TC-013.2 adaptive and TC-013.3 incidents+emergency; each runs 1,000 vehicle-step updates 10 times.
 - Reliability: 100 different seeds, 300 steps per run, plus all-roads-blocked stress scenario.
-- Coverage: aggregate core line coverage is above 80%; branch coverage remains below the STP 70% target. State this as an outstanding QA exit criterion.
+- Coverage: aggregate core line coverage is above 80%; aggregate branch coverage is 70.02%, meeting the STP 70% target; signal.cpp is 67.0% individually, so explain the aggregate-versus-per-module interpretation.
 
 ## Viva preparation
 
@@ -48,7 +48,7 @@ Be ready to explain:
 7. How the summary computes waiting time, average queue and throughput.
 8. How seeded route generation makes runs reproducible.
 9. What CTest, cppcheck, ASan/UBSan, gcovr and the performance/reliability executables each validate.
-10. Why branch coverage is below target and which branches need more tests.
+10. How branch coverage is measured; the aggregate core target is met, while signal.cpp is 67.0% individually.
 11. Which SRS/SAD items remain deviations: role enforcement, separate incident/analytics modules, persistent log retention policy and first-time-user usability evidence.
 
 ## Team contribution evidence
@@ -63,7 +63,7 @@ Before the viva, each member should identify their own exact files/functions and
 
 ## Outstanding before final sign-off
 
-- Raise branch coverage to at least 70%.
+- Confirm whether the faculty applies the 70% branch threshold to the aggregate core set or to each core file; signal.cpp needs 14 additional branch outcomes to reach 70% individually.
 - Confirm the hosted runner is accepted as the designated reference machine or repeat the performance test on the team's desktop/laptop.
 - Complete the three-first-time-user usability walkthrough.
 - Integrate the SRS/SAD/STP addenda into the approved consolidated PDF.
