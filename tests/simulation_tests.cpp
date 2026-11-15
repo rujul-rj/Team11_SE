@@ -93,6 +93,76 @@ void testSummaryEmptyShortAndNormal() {
     require(report.totalArrived == 2 && report.activeVehicles == 0, "normal run completion");
     require(report.throughputVehiclesPerSecond > 0.0, "normal throughput measured");
 }
+void testAutomaticGenerationInterval() {
+    Simulation simulation(makeNetwork());
+
+    simulation.configureVehicleGeneration({{"A", "B", "C"}}, 2, 3);
+
+    require(simulation.vehicles().empty(),
+            "No vehicles should exist before the first step");
+
+    simulation.step();
+    require(simulation.vehicles().empty(),
+            "Vehicle should not generate before the interval");
+
+    simulation.step();
+    require(simulation.vehicles().size() == 1,
+            "One vehicle should generate after two steps");
+
+    require(simulation.vehicles().front().id() == "AUTO-1",
+            "Generated vehicle should have an automatic ID");
+}
+
+void testAutomaticGenerationMaximum() {
+    Simulation simulation(makeNetwork());
+
+    simulation.configureVehicleGeneration({{"A", "B", "C"}}, 1, 2);
+    simulation.run(5);
+
+    require(simulation.vehicles().size() == 2,
+            "Generator should respect its maximum of two vehicles");
+}
+
+void testAutomaticGenerationRejectsInvalidRoute() {
+    Simulation simulation(makeNetwork());
+    bool threw = false;
+
+    try {
+        simulation.configureVehicleGeneration({{"A", "C"}}, 1, 3);
+    } catch (const std::invalid_argument&) {
+        threw = true;
+    }
+
+    require(threw, "Generator should reject an invalid route");
+}
+
+void testAutomaticGenerationRejectsZeroInterval() {
+    Simulation simulation(makeNetwork());
+    bool threw = false;
+
+    try {
+        simulation.configureVehicleGeneration({{"A", "B"}}, 0, 3);
+    } catch (const std::invalid_argument&) {
+        threw = true;
+    }
+
+    require(threw, "Generator should reject a zero interval");
+}
+
+void testTrafficDensityLevels() {
+    auto countFor = [](TrafficDensity density) {
+        Simulation simulation(makeNetwork());
+        simulation.configureVehicleGeneration({{"A", "B", "C"}}, density, 20);
+        simulation.run(12);
+        return simulation.vehicles().size();
+    };
+    const auto low = countFor(TrafficDensity::Low);
+    const auto medium = countFor(TrafficDensity::Medium);
+    const auto high = countFor(TrafficDensity::High);
+    require(low < medium && medium < high,
+            "Higher traffic density should generate more vehicles over the same duration");
+}
+
 void testConfigValidationAndParser() {
     using namespace tms::signals;
     auto c = cfg(); require(validate(c).ok, "valid config accepted");
@@ -146,9 +216,12 @@ void testIntegrationAndInvalidLog() {
 int main() {
     try {
         testRoutesAndNetworkValidation(); testMovement(); testRedAndBlockedQueues(); testInvalidRouteAndIdentifiers();
+        testAutomaticGenerationInterval(); testAutomaticGenerationMaximum();
+        testAutomaticGenerationRejectsInvalidRoute(); testAutomaticGenerationRejectsZeroInterval();
+        testTrafficDensityLevels();
         testConstructorBoundaries(); testSummaryEmptyShortAndNormal(); testConfigValidationAndParser();
         testFixedTime(); testAdaptive(); testEmergency(); testIntegrationAndInvalidLog();
-        std::cout << "All simulation and signal tests passed.\n"; return EXIT_SUCCESS;
+        std::cout << "All simulation, generation, summary, and signal tests passed.\n"; return EXIT_SUCCESS;
     } catch (const std::exception& e) {
         std::cerr << "TEST FAILURE: " << e.what() << '\n'; return EXIT_FAILURE;
     }
