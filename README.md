@@ -151,6 +151,17 @@ See docs/IMPLEMENTATION_DEVIATIONS.md for the full SRS/SAD/STP deviation registe
 | SEC-003 | cppcheck plus ASan/UBSan CI |
 | SEC-004 | invalid signal configuration diagnostic log; persistent audit file remains a deviation |
 
+## Final evaluation documents
+
+- docs/FINAL_DEMO_AND_VIVA_GUIDE.md — live demo flow and viva topics.
+- docs/FINAL_RELEASE_CHECKLIST.md — completed and remaining evaluation items.
+- docs/QA_TEST_CASES.md — updated SRS traceability matrix.
+- docs/UNIT_TEST_REPORT.md and docs/SYSTEM_VALIDATION_REPORT.md — automated and system evidence.
+- docs/CODE_COVERAGE_REPORT.md and docs/BRANCH_COVERAGE_REPORT.md — coverage metrics and gaps.
+- docs/COVERAGE_AND_PERFORMANCE.md and docs/RELIABILITY_REPORT.md — NFR-001 / NFR-002 evidence.
+- docs/STATIC_ANALYSIS_REPORT.md and docs/SECURITY_LOG_REPORT.md — security validation evidence.
+- docs/IMPLEMENTATION_DEVIATIONS.md — honest record of incomplete SRS/SAD/STP items.
+
 ## Contributing
 
 Create a feature branch, run the build and tests, and open a pull request against main. Do not commit generated build directories. Coordinate shared simulation interfaces with the core simulation and signal-control owners before changing them.
