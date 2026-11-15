@@ -1,34 +1,40 @@
 
 #include "Simulation.h"
+#include "network_config_parser.h"
 
 #include <exception>
+#include <fstream>
+#include <string>
+#include <utility>
 #include <iomanip>
 #include <iostream>
 
 int main() {
     try {
-        TrafficNetwork network;
+        std::ifstream networkInput("config/network_example.cfg");
+        if (!networkInput) {
+            throw std::runtime_error("Could not open config/network_example.cfg; run from the repository root.");
+        }
+        auto networkResult = parse_network_config(networkInput);
+        if (!networkResult.ok) {
+            std::string message = "Invalid network configuration";
+            for (const auto& error : networkResult.errors) message += "\\n - " + error;
+            throw std::runtime_error(message);
+        }
 
-        network.addIntersection(Intersection("A"));
-        network.addIntersection(Intersection("B"));
-        network.addIntersection(Intersection("C"));
+        Simulation simulation(std::move(networkResult.network), 1.0);
 
-        network.addRoad(Road("R1", "A", "B", 2));
-        network.addRoad(Road("R2", "B", "C", 1, 4));
-        network.addRoad(Road("R3", "A", "C", 1));
-
-        Simulation simulation(network, 1.0);
-
-        tms::signals::IntersectionSignalConfig signalConfig;
-        signalConfig.intersection_id = "A";
-        signalConfig.phases = {
-            {"AB", {"R1"}, 5, 2},
-            {"AC", {"R3"}, 5, 2}
-        };
-        signalConfig.all_red_s = 1;
-        const auto signalResult = simulation.configureSignal(signalConfig);
+        std::ifstream signalInput("config/signals_example.cfg");
+        if (!signalInput) {
+            throw std::runtime_error("Could not open config/signals_example.cfg.");
+        }
+        const auto signalResult = simulation.signalManager().configure_from_stream(
+            signalInput, "config/signals_example.cfg"
+        );
         if (!signalResult.ok) {
-            throw std::runtime_error("Signal configuration failed.");
+            std::string message = "Invalid signal configuration";
+            for (const auto& error : signalResult.errors) message += "\\n - " + error;
+            throw std::runtime_error(message);
         }
 
         // Add two initial vehicles manually.
