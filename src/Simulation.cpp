@@ -167,6 +167,7 @@ void Simulation::refreshSignalQueues() {
 
 void Simulation::step() {
     lastStepStats_ = {};
+    std::map<std::string, std::size_t> roadUsage;
 
     // Generate new traffic before updating queues and moving vehicles.
     generateVehicles();
@@ -208,12 +209,16 @@ void Simulation::step() {
                 signalManager_.can_proceed(current->id(), road->id());
         }
 
-        if (!road || road->isBlocked() || !allowed) {
+        const bool capacityAvailable = road &&
+            roadUsage[road->id()] < static_cast<std::size_t>(road->effectiveCapacity());
+
+        if (!road || road->isBlocked() || !allowed || !capacityAvailable) {
             vehicle.waitOneStep(stepSeconds_);
             ++lastStepStats_.queuedVehicles;
             continue;
         }
 
+        ++roadUsage[road->id()];
         vehicle.moveToNextIntersection();
 
         const auto emergencyRequest = emergencyRequests_.find(vehicle.id());
@@ -289,6 +294,18 @@ void Simulation::setRoadBlocked(
     }
 
     road->setBlocked(blocked);
+}
+
+void Simulation::setRoadCapacityReduction(
+    const std::string& from,
+    const std::string& to,
+    double factor
+) {
+    auto* road = network_.findRoad(from, to);
+    if (!road) {
+        throw std::invalid_argument("Unknown road: " + from + " -> " + to);
+    }
+    road->setCapacityReductionFactor(factor);
 }
 
 tms::signals::ValidationResult Simulation::configureSignal(
