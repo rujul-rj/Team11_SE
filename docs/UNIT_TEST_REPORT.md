@@ -2,7 +2,7 @@
 
 ## 1. Scope
 
-The C++17 test executable registered with CTest contains **21 test functions**. It covers network configuration, routes, road capacity, vehicle generation, movement/queues, signal control, emergency priority, end-of-run analytics and security audit logging.
+The C++17 test executable registered with CTest contains **28 test functions**. It covers network configuration, routes, road capacity, vehicle generation, movement/queues, signal validation/control, emergency priority, end-of-run analytics, simulation boundaries and security audit logging.
 
 ## 2. Test environment
 
@@ -13,9 +13,9 @@ The C++17 test executable registered with CTest contains **21 test functions**. 
 | Test executable | simulation_tests |
 | Test runner | CTest |
 | Test source | tests/simulation_tests.cpp |
-| CI | GitHub Actions |
 | Compiler | GCC 15.2.0 |
 | OS | GitHub-hosted Ubuntu x86_64 |
+| Workflow | https://github.com/rujul-rj/Team11_SE/actions/runs/43695727436 |
 
 ## 3. Test groups
 
@@ -23,16 +23,20 @@ The C++17 test executable registered with CTest contains **21 test functions**. 
 2. Route and network validation — connected/disconnected routes, duplicate intersections/roads and unknown endpoints.
 3. Vehicle movement and queues — progression, red-signal waiting, blocked-road waiting and recovery.
 4. Road capacity reduction — default capacity, reduction factors, capacity-limited movement, restoration and invalid factor rejection.
-5. Invalid routes and identifiers — duplicate vehicle IDs and unknown signal/road references.
-6. Constructor boundaries — zero lanes, empty identifiers, zero and non-finite simulation step.
-7. End-of-run summaries — empty, short and normal runs; division-by-zero protection and finite throughput.
-8. Automatic generation interval and maximum — generated IDs, configured interval, maximum count and invalid generation routes/intervals.
-9. Seed reproducibility — identical seeds produce identical generated route sequences.
-10. Traffic-density levels — LOW, MEDIUM and HIGH generate increasing vehicle counts over the same duration.
-11. Signal configuration and parser — valid configuration, invalid timings, malformed values and undeclared intersections.
-12. Fixed-time and adaptive controllers — safe phase sequence, queue-sensitive extension and invariants.
-13. Emergency controller and integrated vehicle priority — emergency clearance sequence and arrival at destination.
-14. Persistent security audit logging — three invalid attempts, timestamps, exact line count, persistent sink and newline-injection rejection.
+5. Road constructor/state boundaries — empty IDs/endpoints, self roads, lane/capacity bounds, blocked state and non-finite factors.
+6. Vehicle boundaries — invalid IDs/routes, arrival state, next intersection, zero/fractional/negative waiting durations and emergency type.
+7. Simulation boundaries/facade — duplicate IDs, invalid generation routes, empty generators, ID collisions, fractional steps, signal config, road operations and emergency wrappers.
+8. Invalid routes and identifiers — duplicate vehicle IDs and unknown signal/road references.
+9. Constructor boundaries — zero lanes, empty identifiers, zero and non-finite simulation step.
+10. End-of-run summaries — empty, short and normal runs; division-by-zero protection and finite throughput.
+11. Automatic generation interval and maximum — generated IDs, configured interval, maximum count and invalid generation routes/intervals.
+12. Seed reproducibility — identical seeds produce identical generated route sequences.
+13. Traffic-density levels — LOW, MEDIUM and HIGH generate increasing vehicle counts over the same duration.
+14. Signal configuration/parser — valid configuration, malformed directives, invalid values, duplicate declarations and undeclared intersections.
+15. Signal validation branches — ID length/character rules, phase count, all-red, duplicate names/roads, timing boundaries, adaptive parameters and enum formatting.
+16. Signal controller branches — green/yellow/all-red states, fixed/adaptive selection, current-approach emergency, queued emergencies, clearance order and invariants.
+17. SignalManager facade — valid/invalid/duplicate configuration, empty manager, unknown lookups, strategy changes, emergency operations and queue updates.
+18. Persistent security audit logging — three invalid attempts, timestamps, exact line count, persistent sink and newline-injection rejection.
 
 ## 4. Execution
 
@@ -44,10 +48,10 @@ cmake --build build --parallel
 ctest --test-dir build --output-on-failure
 ```
 
-**Result: PASS.** On 15 November 2026, commit 6611142d24af6c5f02a2dd65f143a3dc60ddf21c, CTest reported 1/1 test executable passed and 100% tests passed. The executable contains the 21 test functions described above. AddressSanitizer and UndefinedBehaviorSanitizer also passed.
+**Result: PASS.** On 15 November 2026, commit bc2a643ff1067350b0a949dd8233ba3db12a677f, CTest reported 1/1 test executable passed and 100% tests passed. The executable contains the 28 test functions described above. AddressSanitizer and UndefinedBehaviorSanitizer also passed.
 
-Workflow: https://github.com/rujul-rj/Team11_SE/actions/runs/43694595234
+Workflow: https://github.com/rujul-rj/Team11_SE/actions/runs/43695727436
 
 ## 5. Conclusion
 
-The automated unit regression suite passes on the tested commit. This result does not imply that every STP system/usability case is complete; see the system validation and implementation-deviation reports.
+The automated unit regression suite passes on the tested commit. The aggregate core line and branch coverage criteria are met. Manual three-first-time-user usability validation remains outstanding.
