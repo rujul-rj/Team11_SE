@@ -261,7 +261,7 @@ void testFixedTime() {
     SignalController c(cfg()); require(c.state("AB") == tms::signals::SignalState::GREEN, "initial phase green");
     c.tick(5); require(c.stage() == Stage::YELLOW, "green ends on schedule"); require(c.invariants_hold(), "yellow invariant");
     c.tick(2); require(c.stage() == Stage::ALL_RED, "yellow then all-red");
-    require(c.state("AB") == tms::signals::SignalState::RED, "all-red stops approach");
+    require(c.state("AB") == tms::signals::tms::signals::SignalState::RED, "all-red stops approach");
     c.tick(1); require(c.state("AX") == tms::signals::SignalState::GREEN, "next phase after clearance");
     require(c.invariants_hold(), "transition invariant");
 }
@@ -379,7 +379,7 @@ void testSignalControllerBranches() {
     SignalController controller(config);
 
     require(controller.invariants_hold(), "initial controller invariants should hold");
-    require(controller.state("UNKNOWN") == SignalState::RED,
+    require(controller.state("UNKNOWN") == tms::signals::SignalState::RED,
             "unknown road should be RED");
     require(controller.set_queue_length("UNKNOWN", 1) == false,
             "unknown queue road should be rejected");
@@ -454,7 +454,7 @@ void testSignalManagerFacadeBranches() {
     require(manager.get("missing") == nullptr, "unknown mutable controller lookup should return null");
     const SignalManager& constManager = manager;
     require(constManager.get("missing") == nullptr, "unknown const controller lookup should return null");
-    require(manager.state("missing", "AB") == SignalState::RED &&
+    require(manager.state("missing", "AB") == tms::signals::SignalState::RED &&
             !manager.can_proceed("missing", "AB"),
             "unknown intersection should fail safe to RED");
     require(!manager.emergency_arrived("missing", "AB") &&
