@@ -93,3 +93,17 @@ jobs:
           name: team11-coverage-reports
           path: docs/coverage/
           if-no-files-found: error
+
+  performance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up CMake
+        uses: lukka/get-cmake@latest
+      - name: Configure Release benchmark
+        run: cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release
+      - name: Build performance benchmark
+        run: cmake --build build-release --target performance_benchmark --parallel 2
+      - name: Run 1000 vehicle-step benchmark 10 times
+        run: ./build-release/performance_benchmark
