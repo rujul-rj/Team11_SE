@@ -359,9 +359,9 @@ void testSignalValidationBranches() {
     x = cfg(); x.strategy = Strategy::ADAPTIVE; x.adaptive.extension_threshold = 0; require(invalid(x), "zero adaptive threshold should fail");
     x = cfg(); x.strategy = Strategy::ADAPTIVE; x.adaptive.extension_threshold = 1001; require(invalid(x), "adaptive threshold above range should fail");
 
-    require(std::string(to_string(SignalState::RED)) == "RED" &&
-            std::string(to_string(SignalState::GREEN)) == "GREEN" &&
-            std::string(to_string(SignalState::YELLOW)) == "YELLOW",
+    require(std::string(to_string(tms::signals::SignalState::RED)) == "RED" &&
+            std::string(to_string(tms::signals::SignalState::GREEN)) == "GREEN" &&
+            std::string(to_string(tms::signals::SignalState::YELLOW)) == "YELLOW",
             "all signal state enum values should have stable text");
     require(std::string(to_string(Strategy::FIXED_TIME)) == "fixed" &&
             std::string(to_string(Strategy::ADAPTIVE)) == "adaptive",
@@ -392,8 +392,8 @@ void testSignalControllerBranches() {
     SignalController controller(config);
 
     require(controller.invariants_hold(), "initial controller invariants should hold");
-    require(controller.state("AB") == SignalState::GREEN &&
-            controller.state("AC") == SignalState::RED,
+    require(controller.state("AB") == tms::signals::SignalState::GREEN &&
+            controller.state("AC") == tms::signals::SignalState::RED,
             "initial phase state should be green only for its approach");
     require(controller.state("UNKNOWN") == tms::signals::SignalState::RED,
             "unknown road should be RED");
@@ -412,18 +412,18 @@ void testSignalControllerBranches() {
     require(controller.request_emergency("AD"), "second approach emergency should be queued");
     controller.tick(1);
     require(controller.stage() == Stage::YELLOW &&
-            controller.state("AB") == SignalState::YELLOW &&
-            controller.state("AC") == SignalState::RED,
+            controller.state("AB") == tms::signals::SignalState::YELLOW &&
+            controller.state("AC") == tms::signals::SignalState::RED,
             "emergency on another approach should trigger yellow only for the current phase");
     controller.tick(2);
     require(controller.stage() == Stage::ALL_RED &&
-            controller.state("AB") == SignalState::RED &&
-            controller.state("AC") == SignalState::RED,
+            controller.state("AB") == tms::signals::SignalState::RED &&
+            controller.state("AC") == tms::signals::SignalState::RED,
             "yellow should transition to all-red for every approach");
     require(controller.request_emergency("AB"), "emergency arriving during clearance should be queued");
     controller.tick(1);
     require(controller.current_phase() == 1 && controller.stage() == Stage::GREEN &&
-            controller.state("AC") == SignalState::GREEN,
+            controller.state("AC") == tms::signals::SignalState::GREEN,
             "first queued emergency should receive green after clearance");
     require(controller.clear_emergency("AC") && controller.emergency_active(),
             "first clear should decrement duplicate emergency count");
@@ -432,7 +432,7 @@ void testSignalControllerBranches() {
     require(controller.stage() == Stage::YELLOW, "next queued emergency should trigger a safe transition");
     controller.tick(3);
     require(controller.current_phase() == 2 && controller.stage() == Stage::GREEN &&
-            controller.state("AD") == SignalState::GREEN,
+            controller.state("AD") == tms::signals::SignalState::GREEN,
             "second queued emergency should receive green in arrival order");
     require(controller.clear_emergency("AD"), "second approach request should clear");
     controller.tick(1);
