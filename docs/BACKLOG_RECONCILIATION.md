@@ -44,7 +44,7 @@
 | #21 | PB-19 performance validation | CI runner meets x86_64 / 4 CPU / 15 GB compute baseline; confirm acceptance or rerun on designated team desktop/laptop |
 | #28 | PB-07 simple build/run workflow | README is complete; three-first-time-user usability walkthrough is outstanding |
 | #31 | PB-21 independent component testability | Add isolated component tests/mocks and improve branch coverage |
-| #34 | PB-24 traceability/regression/final validation | Branch coverage is 51.23% vs 70% target; integrate SRS/SAD/STP addenda into consolidated PDF |
+| #34 | PB-24 traceability/regression/final validation | Aggregate branch coverage is 70.02% vs 70% target; signal.cpp is 67.0% individually. Integrate SRS/SAD/STP addenda into consolidated PDF |
 | #35 | PB-25 Sprint 2 demo/docs/freeze | Documentation is updated; video and release freeze/tag remain |
 | #40 | PB-30 Sprint 1 demo evidence/README | README setup guide is complete; video evidence excluded |
 
