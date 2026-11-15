@@ -19,11 +19,9 @@
 | Intersection.cpp | 75.0% |
 | Road.cpp | 37.0% |
 | Simulation.cpp | 64.3% |
-| TrafficNetwork.cpp | 80.4% |
 | Vehicle.cpp | 36.4% |
 | signal.cpp | 40.5% |
 | signal.hpp | 100.0% |
-| signal_config_parser.cpp | 35.1% |
 
 ## Required follow-up
 
