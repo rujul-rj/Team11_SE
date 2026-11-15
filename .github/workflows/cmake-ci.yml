@@ -105,5 +105,12 @@ jobs:
         run: cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release
       - name: Build performance benchmark
         run: cmake --build build-release --target performance_benchmark --parallel 2
-      - name: Run 1000 vehicle-step benchmark 10 times
+      - name: Record benchmark runner specifications
+        run: |
+          uname -a
+          lscpu
+          free -h
+          g++ --version
+          cmake --version
+      - name: Run TC-013.1, TC-013.2 and TC-013.3 benchmarks 10 times each
         run: ./build-release/performance_benchmark
