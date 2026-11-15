@@ -497,12 +497,23 @@ void testSignalManagerFacadeBranches() {
     manager.set_strategy_all(Strategy::ADAPTIVE);
     require(manager.get("A")->strategy() == Strategy::ADAPTIVE,
             "set_strategy_all should update all configured controllers");
-    manager.tick(10);
-    require(!manager.can_proceed("A", "AB"),
-            "approach should not proceed during adaptive yellow clearance");
     manager.set_strategy_all(Strategy::FIXED_TIME);
     require(manager.get("A")->strategy() == Strategy::FIXED_TIME,
             "set_strategy_all should also restore fixed-time strategy");
+
+    SignalManager adaptiveManager;
+    auto adaptiveConfig = cfg();
+    adaptiveConfig.strategy = Strategy::ADAPTIVE;
+    adaptiveConfig.adaptive.min_green_s = 5;
+    adaptiveConfig.adaptive.max_green_s = 5;
+    adaptiveConfig.adaptive.extension_threshold = 1;
+    require(adaptiveManager.configure(adaptiveConfig).ok,
+            "adaptive manager configuration should succeed");
+    require(adaptiveManager.update_queue("A", "AB", 0),
+            "adaptive manager should accept a current queue sample");
+    adaptiveManager.tick(5);
+    require(!adaptiveManager.can_proceed("A", "AB"),
+            "approach should not proceed during adaptive yellow clearance");
     std::istringstream duplicateExisting(
         "intersection A strategy fixed all_red 1\n"
         "phase A NS green 5 yellow 2 roads AB\n"
