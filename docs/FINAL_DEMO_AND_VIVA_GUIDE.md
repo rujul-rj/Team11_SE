@@ -49,7 +49,7 @@ Be ready to explain:
 8. How seeded route generation makes runs reproducible.
 9. What CTest, cppcheck, ASan/UBSan, gcovr and the performance/reliability executables each validate.
 10. How branch coverage is measured; the aggregate core target is met, while signal.cpp is 67.0% individually.
-11. Which SRS/SAD items remain deviations: role enforcement, separate incident/analytics modules, persistent log retention policy and first-time-user usability evidence.
+11. Which SRS/SAD items remain deviations: role enforcement, separate incident/analytics modules, persistent log retention policy and operator walkthrough evidence for the three-configuration-step limit.
 
 ## Team contribution evidence
 
@@ -65,6 +65,6 @@ Before the viva, each member should identify their own exact files/functions and
 
 - Confirm whether the faculty applies the 70% branch threshold to the aggregate core set or to each core file; signal.cpp needs 14 additional branch outcomes to reach 70% individually.
 - Confirm the hosted runner is accepted as the designated reference machine or repeat the performance test on the team's desktop/laptop.
-- Complete the three-first-time-user usability walkthrough.
+- Record one operator walkthrough demonstrating a basic run in no more than three configuration steps.
 - Integrate the SRS/SAD/STP addenda into the approved consolidated PDF.
 - Complete repository-owner review and merge PR #43; only then reconcile/close superseded PR #42 and backlog issues.
