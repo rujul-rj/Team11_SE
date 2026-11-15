@@ -32,3 +32,20 @@ target_link_libraries(performance_benchmark PRIVATE traffic_core)
 
 add_executable(reliability_benchmark src/reliability_benchmark.cpp)
 target_link_libraries(reliability_benchmark PRIVATE traffic_core)
+
+# Independent component tests
+add_executable(road_tests tests/road_tests.cpp)
+target_link_libraries(road_tests PRIVATE traffic_core)
+add_test(NAME road_tests COMMAND road_tests)
+
+add_executable(vehicle_tests tests/vehicle_tests.cpp)
+target_link_libraries(vehicle_tests PRIVATE traffic_core)
+add_test(NAME vehicle_tests COMMAND vehicle_tests)
+
+add_executable(intersection_tests tests/intersection_tests.cpp)
+target_link_libraries(intersection_tests PRIVATE traffic_core)
+add_test(NAME intersection_tests COMMAND intersection_tests)
+
+add_executable(network_tests tests/network_tests.cpp)
+target_link_libraries(network_tests PRIVATE traffic_core)
+add_test(NAME network_tests COMMAND network_tests)
