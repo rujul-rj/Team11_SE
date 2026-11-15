@@ -2,7 +2,7 @@
 
 ## 1. Scope
 
-This report inventories the dependency-free C++ test executable registered with CTest. The suite contains 20 test functions covering network and route validation, vehicle movement, queue behaviour, traffic-density generation, signal configuration, fixed-time and adaptive control, emergency controller behaviour, integrated emergency-vehicle priority, incident recovery and simulation summaries.
+This report inventories the dependency-free C++ test executable registered with CTest. The suite contains 21 test functions covering network and route validation, vehicle movement, queue behaviour, traffic-density generation, signal configuration, fixed-time and adaptive control, emergency controller behaviour, integrated emergency-vehicle priority, incident recovery and simulation summaries.
 
 ## 2. Test environment
 
