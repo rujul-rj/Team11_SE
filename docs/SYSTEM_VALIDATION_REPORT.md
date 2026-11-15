@@ -45,8 +45,8 @@ ctest --test-dir build --output-on-failure
 - CTest: 1/1 test executable passed; 100% tests passed. The executable contains 17 test functions.
 - Repeated-run check: both executables completed 10 consecutive runs.
 - ASan/UBSan: build and tests passed.
-- NFR-001 CI proxy: 1,000 vehicle-step updates per run, 10 runs; min 0.110 ms, average 0.113 ms, max 0.124 ms on the GitHub-hosted Ubuntu runner. This does not replace the approved reference-machine test.
-- Workflow: [run 43692880777](https://github.com/rujul-rj/Team11_SE/actions/runs/43692880777).
+- NFR-001 performance: 1,000 vehicle-step updates, 10 runs per scenario. TC-013.1 baseline: min 0.110 / avg 0.112 / max 0.119 ms; TC-013.2 adaptive: min 0.118 / avg 0.119 / max 0.121 ms; TC-013.3 incidents+emergency: min 0.097 / avg 0.098 / max 0.103 ms. Runner: x86_64 Ubuntu VM, 4 CPUs, 15 GiB RAM, AMD EPYC 9V74, GCC 15.2.0, CMake 4.5.0. This meets the STP compute baseline but is not the designated team desktop/laptop.
+- Workflow: [run 43693133717](https://github.com/rujul-rj/Team11_SE/actions/runs/43693133717).
 
 ## 6. Limitations to disclose
 
