@@ -4,7 +4,8 @@
 - [x] Recovery implementation from PR #42 has been carried onto the current mainline in the final-evaluation-prep branch and proposed in PR #43.
 - [ ] Review and merge PR #43; it is intentionally left open for repository-owner review.
 - [ ] Close PR #42 as superseded only after PR #43 is approved and merged.
-- [ ] Reconcile the open backlog issues with the merged code and close only verified completed items.
+- [x] Create docs/BACKLOG_RECONCILIATION.md with a per-issue ready-to-close / keep-open map for the 40 open backlog issues.
+- [ ] After PR #43 is merged, close verified completed issues and update the GitHub Project board.
 - [x] README now documents clean build, test, run, configuration, performance and reliability workflows.
 - [ ] Verify a clean clone/build/run on a second machine.
 - [ ] Record the final merged commit SHA and create a release tag after sign-off.
