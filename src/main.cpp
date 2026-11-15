@@ -3,6 +3,10 @@
 #include "network_config_parser.h"
 
 #include <exception>
+#include <chrono>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
 #include <filesystem>
 #include <fstream>
 #include <fstream>
@@ -11,6 +15,27 @@
 #include <utility>
 #include <iomanip>
 #include <iostream>
+
+namespace {
+std::string audit_timestamp() {
+    const auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    std::ostringstream output;
+    output << std::put_time(std::localtime(&now), "%Y-%m-%dT%H:%M:%S");
+    return output.str();
+}
+
+void append_network_config_audit(const std::string& source, const std::string& message) {
+    std::filesystem::create_directories("logs");
+    std::ofstream log("logs/invalid-config.log", std::ios::app);
+    if (!log) return;
+    auto safe = [](std::string value) {
+        for (char& ch : value) if (ch == '\n' || ch == '\r') ch = ' ';
+        return value;
+    };
+    log << audit_timestamp() << " INVALID_CONFIG [" << safe(source)
+        << "]: " << safe(message) << '\n';
+}
+}
 
 int main() {
     try {
@@ -21,7 +46,10 @@ int main() {
         auto networkResult = parse_network_config(networkInput);
         if (!networkResult.ok) {
             std::string message = "Invalid network configuration";
-            for (const auto& error : networkResult.errors) message += "\n - " + error;
+            for (const auto& error : networkResult.errors) {
+                append_network_config_audit("config/network_example.cfg", error);
+                message += "\n - " + error;
+            }
             throw std::runtime_error(message);
         }
 
