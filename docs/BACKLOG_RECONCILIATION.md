@@ -2,71 +2,52 @@
 
 **Snapshot:** 15 November 2026  
 **Repository:** rujul-rj/Team11_SE  
-**Open backlog:** 40 issues; open PRs #42 and #43  
-**Integration dependency:** PR #43 is mergeable and all six CI jobs pass, but it remains open for repository-owner review. Do not close implementation issues until PR #43 is merged.
+**Current main merge:** PR #43 merged as `0111898c3cf2b7437f27f976ef3818b13e88dabf`  
+**Superseded PR:** #42 closed after confirming its recovery work is included in PR #43  
+**Backlog state:** 30 issues closed; 10 remain open.
 
-## Ready to close after PR #43 is merged and owner verifies the result
+## Closed after PR #43 was merged
 
-| Issue | Backlog item | Current evidence |
+**Completed implementation/evidence issues:** #3, #14, #15, #16, #17, #18, #19, #20, #22, #23, #24, #25, #26, #29, #30, #32, #33, #34, #36, #37, #38, #39.
+
+These cover the network model, signal configuration, generation/routes, movement/queues, fixed/adaptive control, emergency priority, incidents, metrics, summaries, strategy comparison, reliability, input/memory safety, diagnostic logging, traceability and final validation. Each issue was closed with the merged PR #43 commit and current CI evidence.
+
+**Duplicate issues closed with a canonical reference:** #4 -> #23, #5 -> #24, #6 -> #25, #7 -> #26, #8 -> #27, #9 -> #28, #10 -> #29, #11 -> #30.
+
+## Remaining open issues
+
+| Issue | Backlog item | Why it remains open |
 |---|---|---|
-| #3 | PB-01 road/lane/intersection model | Network model plus validated network configuration parser |
-| #4, #23 | PB-02 signal configuration | config/signals_example.cfg and parser/controller tests |
-| #5, #24 | PB-03 vehicle generation/routes | LOW/MEDIUM/HIGH generation, bounds, route validation and seeded route selection |
-| #6, #25 | PB-04 movement/queues | Movement, red-signal, blocked-road and capacity queue tests |
-| #7, #26 | PB-05 invalid network validation | Network parser rejects malformed directives, unknown endpoints, duplicate/self roads and invalid lanes/capacities |
-| #9 | PB-07 simple build/run workflow | README has clean configure/build/test/run instructions |
-| #10, #29 | PB-08 malformed configuration validation | Network and signal parser negative tests |
-| #11, #30 | PB-09 range/invalid-value validation | Timing, capacity factor, route and constructor boundary tests |
-| #14 | PB-12 fixed-time signal strategy | Fixed-time controller tests and signal config file |
-| #15 | PB-13 adaptive signal strategy | Queue-responsive controller tests and comparison executable |
-| #16 | PB-14 emergency priority | Integrated emergency-vehicle signal-priority regression |
-| #17 | PB-15 traffic incident handling | Per-road capacity reduction and block/unblock behaviour |
-| #18 | PB-16 simulation metrics | Waiting time, queue length and throughput aggregation |
-| #19 | PB-17 end-of-run summary | Empty, short and normal summary tests |
-| #20 | PB-18 strategy comparison | Same capacity-constrained demand; measured fixed/adaptive comparison |
-| #22 | PB-20 repeated-run reliability | 100 seeded 300-step runs plus all-roads-blocked stress |
-| #32 | PB-22 memory/input safety | cppcheck, ASan/UBSan and invalid-input tests |
-| #33 | PB-23 diagnostic logging | Timestamped, newline-sanitized persistent configuration audit log |
-| #36 | PB-26 core simulation integration | Runnable main simulation and strategy comparison |
-| #37 | PB-27 configuration/boundary recovery | Network parser, signal parser, capacity and constructor boundary tests |
-| #38 | PB-28 metrics/summary/comparison | Reports and comparison executable updated |
-| #39 | PB-29 reliability/performance/memory safety | Three performance scenarios, 100-run reliability, cppcheck and sanitizers |
-
-## Keep open until the remaining acceptance criteria are completed
-
-| Issue | Backlog item | Remaining work |
-|---|---|---|
-| #1 | Sprint 1 epic | Close only after child issues are reconciled and video evidence policy is agreed |
-| #2 | Sprint 2 epic | Close only after child issues and final release items are reconciled |
-| #8, #27 | PB-06 modular/testable components | Separate IncidentManager and AnalyticsEngine classes are not present; custom harness is used instead of independent mocks/stubs |
-| #12 | PB-10 CMake/GoogleTest/CI | CMake and CI are implemented; GoogleTest/GoogleMock has not been adopted |
-| #13 | PB-11 Sprint 1 video | Demo video excluded from this task |
-| #21 | PB-19 performance validation | CI runner meets x86_64 / 4 CPU / 15 GB compute baseline; confirm acceptance or rerun on designated team desktop/laptop |
-| #28 | PB-07 simple build/run workflow | README documents the three-step configuration/start path; one operator walkthrough is still needed to verify it |
-| #31 | PB-21 independent component testability | Add isolated component tests/mocks and improve branch coverage |
-| #34 | PB-24 traceability/regression/final validation | Aggregate branch coverage is 70.02% vs 70% target; signal.cpp is 67.0% individually. Integrate SRS/SAD/STP addenda into consolidated PDF |
-| #35 | PB-25 Sprint 2 demo/docs/freeze | Documentation is updated; video and release freeze/tag remain |
-| #40 | PB-30 Sprint 1 demo evidence/README | README setup guide is complete; video evidence excluded |
+| #1 | Sprint 1 epic | Sprint 1 video evidence is still outstanding (#13/#40). |
+| #2 | Sprint 2 epic | Sprint 2 video and formal freeze/tag remain outstanding (#35). |
+| #12 | PB-10 CMake, GoogleTest and CI baseline | CMake and CI pass; the repository uses a custom test harness rather than the GoogleTest dependency named in the backlog. Resolve or approve the framework deviation. |
+| #13 | PB-11 Sprint 1 working-product video | Demo video excluded from this task. |
+| #21 | PB-19 performance validation | CI benchmark passes on a runner meeting the minimum compute spec; team must confirm the designated reference machine or rerun there. |
+| #27 | PB-06 modular/testable components | Road, Intersection, Vehicle, TrafficNetwork and signal control are modular; separate IncidentManager and AnalyticsEngine classes are not present. |
+| #28 | PB-07 simple build/run workflow (NFR-005) | README documents the three-step path; one operator walkthrough still needs to be recorded to verify a basic run in no more than three configuration steps. |
+| #31 | PB-21 independent component testability | Core components have isolated tests, but mocks/stubs are not used; confirm whether the evaluator requires them. |
+| #35 | PB-25 Sprint 2 demo/docs/freeze | Documentation is updated; video and formal release freeze/tag remain. |
+| #40 | PB-30 Sprint 1 demo evidence/README | README setup guide is complete; video evidence remains excluded. |
 
 ## Duplicate issue families
 
-The original and recovery backlog contains duplicates for PB-02 through PB-09:
-- PB-02: #4 and #23
-- PB-03: #5 and #24
-- PB-04: #6 and #25
-- PB-05: #7 and #26
-- PB-06: #8 and #27
-- PB-07: #9 and #28
-- PB-08: #10 and #29
-- PB-09: #11 and #30
+The original and recovery backlog contained duplicate PB-02 through PB-09 issues. The older copies were closed with duplicate references:
+- PB-02: #4 closed as duplicate of #23 (canonical issue completed).
+- PB-03: #5 closed as duplicate of #24 (canonical issue completed).
+- PB-04: #6 closed as duplicate of #25 (canonical issue completed).
+- PB-05: #7 closed as duplicate of #26 (canonical issue completed).
+- PB-06: #8 closed as duplicate of #27 (canonical issue remains open for modularity work).
+- PB-07: #9 closed as duplicate of #28 (canonical issue remains open for operator walkthrough).
+- PB-08: #10 closed as duplicate of #29 (canonical issue completed).
+- PB-09: #11 closed as duplicate of #30 (canonical issue completed).
 
-When closing, retain one canonical issue per backlog item and close the duplicate with a reference to the canonical issue. Do not bulk-close both copies without recording the relationship.
+## Remaining closeout sequence
 
-## Safe closeout sequence
+1. Record the one-operator NFR-005 walkthrough (basic run in <=3 configuration steps).
+2. Confirm the designated performance reference machine.
+3. Resolve or formally approve the GoogleTest/mocks-stubs and separate-module deviations.
+4. Complete the SRS/SAD/STP PDF repository upload and confirm any per-module branch-coverage interpretation (aggregate core branch coverage is 70.02%; signal.cpp is 67.0% individually).
+5. Record demo videos, identify the freeze commit/tag, and close the two sprint epics when their child evidence is complete.
+6. Update the GitHub Project board to reflect the 10 remaining open issues and closed work.
 
-1. Repository owner reviews and merges PR #43.
-2. Close PR #42 as superseded by PR #43 after confirming the merged tree contains its recovery work.
-3. Close only the “ready to close” issues above, linking each to PR #43 and the relevant report/test evidence.
-4. Keep partial and video-dependent issues open.
-5. Update the GitHub Project board and sprint epics to match the final issue states.
-6. Create a release tag only after the branch-coverage decision, reference-machine decision and consolidated PDF are signed off.
+The project board itself was not independently updated in this pass.
