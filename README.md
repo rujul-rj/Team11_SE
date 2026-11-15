@@ -96,7 +96,7 @@ GitHub Actions runs:
 - cppcheck static analysis.
 - gcovr line and branch coverage reports as a workflow artifact.
 
-The current coverage report records aggregate core line coverage above 80%, but branch coverage remains below the STP target of 70%. See docs/CODE_COVERAGE_REPORT.md and docs/BRANCH_COVERAGE_REPORT.md.
+The current coverage report records aggregate core line coverage 97.85% and aggregate branch coverage 70.02%; signal.cpp branch coverage is 67.0% individually of 70%. See docs/CODE_COVERAGE_REPORT.md and docs/BRANCH_COVERAGE_REPORT.md.
 
 ## Metrics definitions
 
