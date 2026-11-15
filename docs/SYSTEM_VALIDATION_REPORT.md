@@ -40,13 +40,13 @@ ctest --test-dir build --output-on-failure
 
 ## 5. Measured CI outputs
 
-- Main simulation: 12 steps, 8 vehicles added, 3 arrived and 5 active; total waiting time 43.00 vehicle-seconds; average waiting time 5.38 seconds/vehicle; average queue length 3.58 vehicles/step; throughput 0.25 vehicles/second.
+- Main simulation: 12 steps, 8 vehicles added, 3 arrived and 5 active; total waiting time 44.00 vehicle-seconds; average waiting time 5.50 seconds/vehicle; average queue length 3.67 vehicles/step; throughput 0.25 vehicles/second.
 - Strategy comparison (same network, 22 vehicles: 20 on AB and 2 on AC, 30 one-second steps): both strategies completed all 22 vehicles; fixed-time total wait 216.000 vehicle-seconds and average queue 7.200; adaptive total wait 156.000 vehicle-seconds and average queue 5.200; both throughput 0.733 vehicles/second. Adaptive performs better on this tested demand, but this is scenario-specific.
 - CTest: 1/1 test executable passed; 100% tests passed. The executable contains 17 test functions.
 - Repeated-run check: both executables completed 10 consecutive runs.
 - ASan/UBSan: build and tests passed.
-- NFR-001 performance: 1,000 vehicle-step updates, 10 runs per scenario. TC-013.1 baseline: min 0.110 / avg 0.112 / max 0.119 ms; TC-013.2 adaptive: min 0.118 / avg 0.119 / max 0.121 ms; TC-013.3 incidents+emergency: min 0.097 / avg 0.098 / max 0.103 ms. Runner: x86_64 Ubuntu VM, 4 CPUs, 15 GiB RAM, AMD EPYC 9V74, GCC 15.2.0, CMake 4.5.0. This meets the STP compute baseline but is not the designated team desktop/laptop.
-- Workflow: [run 43693133717](https://github.com/rujul-rj/Team11_SE/actions/runs/43693133717).
+- NFR-001 performance: 1,000 vehicle-step updates, 10 runs per scenario. TC-013.1 baseline: min 0.083 / avg 0.086 / max 0.093 ms; TC-013.2 adaptive: min 0.088 / avg 0.090 / max 0.099 ms; TC-013.3 incidents+emergency: min 0.069 / avg 0.070 / max 0.075 ms. Runner: x86_64 Ubuntu VM, 4 CPUs, 15 GiB RAM, AMD EPYC 9V74, GCC 15.2.0, CMake 4.5.0. This meets the STP compute baseline but is not the designated team desktop/laptop.
+- Workflow: [run 43693880691](https://github.com/rujul-rj/Team11_SE/actions/runs/43693133717).
 
 ## 6. Limitations to disclose
 
