@@ -2,19 +2,17 @@
 #include "Simulation.h"
 #include "network_config_parser.h"
 
-#include <exception>
 #include <chrono>
 #include <ctime>
-#include <iomanip>
-#include <sstream>
+#include <exception>
 #include <filesystem>
 #include <fstream>
-#include <fstream>
-#include <string>
-#include <stdexcept>
-#include <utility>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <utility>
 
 namespace {
 std::string audit_timestamp() {
