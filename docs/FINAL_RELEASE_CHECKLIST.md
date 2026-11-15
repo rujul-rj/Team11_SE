@@ -21,7 +21,7 @@
 - [ ] Update the original STP test cases and obtain faculty/team approval for documented deviations.
 
 ## QA evidence
-- [x] Unit Test Report updated; 21 test functions pass under CTest on the CI commit.
+- [x] Unit Test Report updated; 28 test functions pass under CTest on the CI commit.
 - [x] System Validation Report updated with main simulation, emergency, incident and strategy-comparison evidence.
 - [x] Code Coverage Report generated; aggregate core line coverage 84.32%.
 - [x] Branch Coverage Report generated; 51.23%, below the STP 70% target. More branch tests are required.
@@ -30,7 +30,7 @@
 - [x] TC-013.1, TC-013.2 and TC-013.3 performance workloads each pass 10 repetitions on the hosted x86_64 4-CPU / 15-GiB runner.
 - [x] TC-014 reliability job passes 100 seeded 300-step runs plus the all-roads-blocked stress case.
 - [ ] Confirm that the hosted runner is accepted as the reference machine, or repeat NFR-001 on the team's designated desktop/laptop.
-- [ ] Raise core-module branch coverage to at least 70%; Road and signal-control module coverage still need improvement.
+- [x] Aggregate core branch coverage meets the 70% target (70.02%); signal.cpp is 67.0% individually, so confirm whether faculty expects the threshold per module.
 - [x] Implement timestamped, newline-sanitized SEC-004 logging for signal and network configuration errors; automated tests verify the log sink and injection handling.
 - [ ] Run the full three-entry/no-false-entry test on the designated reference environment and attach the actual log file as evidence.
 - [ ] Complete the three-first-time-user NFR-005 usability walkthrough and record steps/results.
@@ -42,7 +42,7 @@
 - [ ] Rehearse the live CLI demonstration on the final merged commit.
 - [ ] Prepare answers on why the capacity model is simplified and why the adaptive comparison result is scenario-specific.
 
-- [x] Latest all-green CI run: https://github.com/rujul-rj/Team11_SE/actions/runs/43694595234 (all six jobs passed).
+- [x] Latest all-green CI run: https://github.com/rujul-rj/Team11_SE/actions/runs/43695727436 (all six jobs passed).
 
 ## Excluded
 Demo videos are intentionally not included in this task's completion scope.
