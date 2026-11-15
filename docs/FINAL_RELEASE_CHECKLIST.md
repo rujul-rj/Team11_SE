@@ -30,7 +30,8 @@
 - [x] TC-014 reliability job passes 100 seeded 300-step runs plus the all-roads-blocked stress case.
 - [ ] Confirm that the hosted runner is accepted as the reference machine, or repeat NFR-001 on the team's designated desktop/laptop.
 - [ ] Raise core-module branch coverage to at least 70%; Road and signal-control module coverage still need improvement.
-- [ ] Implement persistent timestamped SEC-004 logging and attach the three-entry/no-false-entry/log-injection evidence.
+- [x] Implement timestamped, newline-sanitized SEC-004 logging for signal and network configuration errors; automated tests verify the log sink and injection handling.
+- [ ] Run the full three-entry/no-false-entry test on the designated reference environment and attach the actual log file as evidence.
 - [ ] Complete the three-first-time-user NFR-005 usability walkthrough and record steps/results.
 
 ## Presentation and viva (non-video)
