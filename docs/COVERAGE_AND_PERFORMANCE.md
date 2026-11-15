@@ -35,11 +35,11 @@ gcovr --root . --filter 'src/.*' --filter 'tms/.*' \
 
 ## Performance validation
 
-The exact numeric performance target must be copied from the approved SRS before a compliance claim is made. Measure a defined workload on the intended environment and record:
+The approved SRS NFR-001 target is **at least 1,000 vehicle-movement steps within 2.0 seconds**. The STP defines one vehicle's movement update in one simulation time step as one vehicle-step, and TC-013.1 requires 10 repeated runs with every run at or below 2.0 seconds. TC-013.2 repeats this for adaptive mode; TC-013.3 repeats it with incidents and emergency vehicles. The STP reference machine is an x86-64 desktop/laptop with at least 4 cores and 8 GB RAM; record the actual CPU, memory, OS and compiler. Performance tests must use a Release build. The CI benchmark is a reproducible proxy; it does not replace the reference-machine result. Measure a defined workload on the intended environment and record:
 - number of intersections, roads and vehicles
 - simulation steps and configured step duration
 - compiler, optimization level, CPU and OS
 - elapsed wall-clock time and repeated-run statistics
 - target from the SRS and measured result
 
-The current CI repeat-run check is a reliability check, not a measured proof that an SRS performance target is met. Do not report performance compliance until the SRS target and actual timing evidence are attached.
+The CI performance executable runs 100 vehicles for 10 steps (1,000 vehicle-step updates) over a four-intersection / twelve-road network, repeating the workload 10 times. Its timing is recorded in the Actions log. The reference-machine TC-013.1/TC-013.2/TC-013.3 results still need to be run on the STP reference machine before NFR-001 can be signed off.
