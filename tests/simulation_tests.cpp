@@ -261,7 +261,7 @@ void testFixedTime() {
     SignalController c(cfg()); require(c.state("AB") == tms::signals::SignalState::GREEN, "initial phase green");
     c.tick(5); require(c.stage() == Stage::YELLOW, "green ends on schedule"); require(c.invariants_hold(), "yellow invariant");
     c.tick(2); require(c.stage() == Stage::ALL_RED, "yellow then all-red");
-    require(c.state("AB") == tms::signals::tms::signals::SignalState::RED, "all-red stops approach");
+    require(c.state("AB") == tms::signals::SignalState::RED, "all-red stops approach");
     c.tick(1); require(c.state("AX") == tms::signals::SignalState::GREEN, "next phase after clearance");
     require(c.invariants_hold(), "transition invariant");
 }
@@ -357,7 +357,7 @@ void testSignalValidationBranches() {
     x = cfg(); x.strategy = Strategy::ADAPTIVE; x.adaptive.extension_threshold = 0; require(invalid(x), "zero adaptive threshold should fail");
     x = cfg(); x.strategy = Strategy::ADAPTIVE; x.adaptive.extension_threshold = 1001; require(invalid(x), "adaptive threshold above range should fail");
 
-    require(std::string(to_string(static_cast<SignalState>(99))) == "RED",
+    require(std::string(to_string(static_cast<tms::signals::SignalState>(99))) == "RED",
             "unknown signal state should fail safe to RED");
     require(std::string(to_string(static_cast<Strategy>(99))) == "fixed",
             "unknown strategy enum should use fixed fallback text");
