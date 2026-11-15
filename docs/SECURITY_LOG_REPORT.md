@@ -1,7 +1,7 @@
 # SEC-004 — Invalid Configuration Audit Log Report
 
-**Commit tested:** 6611142d24af6c5f02a2dd65f143a3dc60ddf21c  
-**Workflow:** https://github.com/rujul-rj/Team11_SE/actions/runs/43694595234  
+**Commit tested:** bc2a643ff1067350b0a949dd8233ba3db12a677f  
+**Workflow:** https://github.com/rujul-rj/Team11_SE/actions/runs/43695727436  
 **Test:** testPersistentInvalidConfigurationLogging
 
 ## Procedure
