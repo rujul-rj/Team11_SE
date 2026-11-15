@@ -18,7 +18,7 @@ int main() {
         auto networkResult = parse_network_config(networkInput);
         if (!networkResult.ok) {
             std::string message = "Invalid network configuration";
-            for (const auto& error : networkResult.errors) message += "\\n - " + error;
+            for (const auto& error : networkResult.errors) message += "\n - " + error;
             throw std::runtime_error(message);
         }
 
