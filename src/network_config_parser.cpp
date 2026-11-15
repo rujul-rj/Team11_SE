@@ -33,7 +33,7 @@ NetworkParseResult parse_network_config(std::istream& input) {
         std::vector<std::string> tokens;
         std::string token;
         while (row >> token) tokens.push_back(token);
-        if (tokens.empty() || tokens.front().starts_with("#")) continue;
+        if (tokens.empty() || tokens.front().front() == '#') continue;
 
         try {
             if (tokens[0] == "intersection") {
