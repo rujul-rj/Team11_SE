@@ -5,6 +5,7 @@
 #include <exception>
 #include <fstream>
 #include <string>
+#include <stdexcept>
 #include <utility>
 #include <iomanip>
 #include <iostream>
