@@ -632,10 +632,12 @@ void testSimulationBoundaryAndFacadeBranches() {
     require(!simulation.configureSignal(unknownSignal).ok,
             "signal config for unknown intersection should fail");
     auto wrongOutgoing = cfg();
+    wrongOutgoing.intersection_id = "A";
     wrongOutgoing.phases[1].roads = {"BC"};
     require(!simulation.configureSignal(wrongOutgoing).ok,
             "signal phase referencing a non-outgoing road should fail");
     auto validSignal = cfg();
+    validSignal.intersection_id = "A";
     validSignal.phases[1].roads = {"AC"};
     require(simulation.configureSignal(validSignal).ok,
             "valid outgoing road signal config should succeed");
