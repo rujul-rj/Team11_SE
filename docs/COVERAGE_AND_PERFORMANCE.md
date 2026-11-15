@@ -15,6 +15,26 @@ The artifact contains:
 
 Download the artifact from the successful Actions run and place the extracted reports under `docs/coverage/` in the final release branch if the evaluator requires the generated files to be committed in the repository.
 
+## Latest CI evidence
+
+**Commit:** bc2a643ff1067350b0a949dd8233ba3db12a677f  
+**Workflow:** https://github.com/rujul-rj/Team11_SE/actions/runs/43695727436
+
+Core coverage from the uploaded artifact:
+- Core line coverage: **97.85% (547/559)**.
+- Core branch coverage: **70.02% (570/814)** — aggregate STP target met.
+- signal.cpp branch coverage is 67.0%; if the evaluator expects each core file to meet 70%, add 14 signal.cpp branch outcomes.
+
+Performance results (1,000 vehicle-step updates per scenario, 10 repetitions; each run target ≤2,000 ms):
+
+| Scenario | Minimum | Average | Maximum |
+|---|---:|---:|---:|
+| TC-013.1 baseline | 0.165 ms | 0.168 ms | 0.194 ms |
+| TC-013.2 adaptive | 0.175 ms | 0.179 ms | 0.194 ms |
+| TC-013.3 incidents + emergency | 0.139 ms | 0.141 ms | 0.147 ms |
+
+Runner: Ubuntu x86_64, AMD EPYC 7763 64-Core Processor, 4 CPUs, 15 GiB RAM, GCC 15.2.0 and CMake 4.5.0. All repetitions passed. This runner meets the SRS minimum compute specification, but the designated team desktop/laptop identity still needs confirmation.
+
 ## Local reproduction
 
 Install gcovr, then run:
