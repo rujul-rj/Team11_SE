@@ -112,7 +112,7 @@ int main() {
         const bool incidentEmergency = runScenario("TC-013.3 incidents+emergency", true, true);
         return baseline && adaptive && incidentEmergency ? 0 : 1;
     } catch (const std::exception& error) {
-        std::cerr << "Performance benchmark failed: " << error.what() << '\\n';
+        std::cerr << "Performance benchmark failed: " << error.what() << '\n';
         return 2;
     }
 }
