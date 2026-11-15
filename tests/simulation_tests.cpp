@@ -299,7 +299,7 @@ void testPersistentInvalidConfigurationLogging() {
     SignalManager manager;
     std::ostringstream persisted;
     manager.set_log_sink([&persisted](const std::string& line) {
-        persisted << line << '\\n';
+        persisted << line << '\n';
     });
 
     auto invalid = cfg();
@@ -309,14 +309,14 @@ void testPersistentInvalidConfigurationLogging() {
     require(manager.invalid_attempt_log().size() == 1,
             "invalid configuration should create a diagnostic entry");
 
-    std::istringstream malformed("intersection A strategy fixed all_red 1\\nphase A X green nope yellow 2 roads AB\\n");
-    const auto second = manager.configure_from_stream(malformed, "source\\nFORGED");
+    std::istringstream malformed("intersection A strategy fixed all_red 1\nphase A X green nope yellow 2 roads AB\n");
+    const auto second = manager.configure_from_stream(malformed, "source\nFORGED");
     require(!second.ok, "malformed signal file should be rejected");
     require(manager.invalid_attempt_log().size() >= 2,
             "each invalid attempt should be recorded");
     require(persisted.str().find("INVALID_CONFIG") != std::string::npos,
             "log sink should receive invalid configuration entries");
-    require(persisted.str().find("\\nFORGED") == std::string::npos,
+    require(persisted.str().find("\nFORGED") == std::string::npos,
             "newline log injection should be neutralized");
     require(manager.invalid_attempt_log().front().find("T") != std::string::npos,
             "log entries should include a timestamp");
