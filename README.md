@@ -44,7 +44,8 @@ For MinGW or another single-configuration generator, executables are usually und
 - Road incidents represented by blocking and unblocking a road.
 - Fixed-time/adaptive signal controllers, safe phase transitions, emergency priority and signal configuration parsing in `tms/signals/`.
 - Per-step statistics and end-of-run summary statistics, including active/arrived vehicles, accumulated waiting time, average queue length and throughput.
-- Configurable LOW / MEDIUM / HIGH traffic-density generation with bounded vehicle counts and validated routes.
+- Network topology is loaded from config/network_example.cfg; signal phases are loaded from config/signals_example.cfg, with validation before the run starts.
+- Configurable LOW / MEDIUM / HIGH traffic-density generation with seeded route selection, bounded vehicle counts and validated routes.
 - Per-road vehicle capacity (default 20 vehicles per lane per simulation step), capacity-reduction factors in [0, 1], and full road blocking.
 - A deterministic `strategy_comparison` executable that runs fixed-time and adaptive signal configurations with the same network, vehicle demand, step duration and run length.
 - Automated tests for route/configuration validation, boundaries, incidents, signal transitions and empty/short/normal summaries.
