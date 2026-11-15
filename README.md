@@ -1,20 +1,20 @@
 # Team 11 Traffic Management System
 
-A C++17 **traffic simulation** for experimenting with road networks, vehicles, signal control and traffic incidents. This is not a controller for real-world traffic infrastructure.
+A C++17 single-process traffic simulation for experimenting with road networks, vehicle generation, signal control, emergency priority and road incidents. It does not control real traffic infrastructure or use live traffic data.
 
 ## Prerequisites
 
-- C++17 compiler (GCC 9+, Clang 10+, or a current Visual Studio C++ toolchain)
+- C++17 compiler (GCC 9+, Clang 10+ or Visual Studio C++ toolchain)
 - CMake 3.16+
 - Git
 
-No third-party test framework is currently required; the repository uses a dependency-free C++ test executable registered with CTest.
+The project uses a dependency-free C++ test harness registered with CTest.
 
 ## Clean build, test and run
 
-Run these commands from the repository root.
+Run from the repository root because the sample executable reads configuration files from config/.
 
-### Linux / macOS / WSL (GCC or Clang)
+### Linux / macOS / WSL
 
 ```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
@@ -24,7 +24,7 @@ ctest --test-dir build --output-on-failure
 ./build/strategy_comparison
 ```
 
-### Windows PowerShell (Visual Studio generator)
+### Windows PowerShell
 
 ```powershell
 cmake -S . -B build
@@ -34,88 +34,123 @@ ctest --test-dir build -C Release --output-on-failure
 .\build\Release\strategy_comparison.exe
 ```
 
-For MinGW or another single-configuration generator, executables are usually under `build\`. If CMake cannot find a compiler, install the C++ workload for Visual Studio or a GCC/Clang toolchain and reopen the terminal.
+## Configuration
 
-## What is implemented
+The sample application loads both files before starting:
 
-- Directed roads with lane counts and intersection endpoints.
-- Route validation before a vehicle enters simulation state.
-- Vehicle movement, waiting-time accounting and queue behaviour at red signals or blocked roads.
-- Road incidents represented by blocking and unblocking a road.
-- Fixed-time/adaptive signal controllers, safe phase transitions, emergency priority and signal configuration parsing in `tms/signals/`.
-- Per-step statistics and end-of-run summary statistics, including active/arrived vehicles, accumulated waiting time, average queue length and throughput.
-- Network topology is loaded from config/network_example.cfg; signal phases are loaded from config/signals_example.cfg, with validation before the run starts.
-- Configurable LOW / MEDIUM / HIGH traffic-density generation with seeded route selection, bounded vehicle counts and validated routes.
-- Per-road vehicle capacity (default 20 vehicles per lane per simulation step), capacity-reduction factors in [0, 1], and full road blocking.
-- A deterministic `strategy_comparison` executable that runs fixed-time and adaptive signal configurations with the same network, vehicle demand, step duration and run length.
-- Automated tests for route/configuration validation, boundaries, incidents, signal transitions and empty/short/normal summaries.
-- CI checks that build the project, run tests and demos, repeat both executables 10 times, and run the test suite under AddressSanitizer/UndefinedBehaviorSanitizer.
+- config/network_example.cfg — intersections and directed roads.
+- config/signals_example.cfg — signal strategy, phases, green/yellow timings and road assignments.
 
-Signal configuration syntax and an example are in [config/signals_example.cfg](config/signals_example.cfg) and [tms/signals/README.md](tms/signals/README.md).
+Network file format:
+
+```text
+intersection A
+intersection B
+intersection C
+road R1 A B 2 40
+road R2 B C 1 4
+road R3 A C 1 20
+```
+
+Each road line is: road, road ID, source intersection, destination intersection, lane count, optional capacity. If capacity is omitted, the default is 20 vehicles per lane per simulation step. Malformed directives, duplicate IDs, unknown endpoints, invalid lanes and invalid capacities are rejected with line-specific errors.
+
+Signal syntax and additional examples are documented in config/signals_example.cfg and tms/signals/README.md.
+
+## Implemented capabilities
+
+- Validated network configuration from a file, including roads, lanes, intersections and per-road capacity.
+- LOW / MEDIUM / HIGH traffic-density generation with bounded vehicle counts and reproducible seeded route selection.
+- Vehicle movement, route validation, queueing at red signals, blocked roads and capacity-limited roads.
+- Fixed-time and adaptive signal control with safe GREEN → YELLOW → ALL_RED transitions.
+- NORMAL / EMERGENCY vehicle types; emergency requests receive priority through the safe signal-clearance sequence.
+- Road incidents that reduce a road's capacity by a factor in [0, 1] or block/unblock it.
+- Per-step queue, waiting-time and throughput metrics plus an end-of-run summary.
+- A deterministic fixed-time vs adaptive comparison on the same capacity-constrained demand.
+
+## Executables
+
+| Executable | Purpose |
+|---|---|
+| traffic_sim | Main sample scenario: loads network/signal files, generates traffic, demonstrates emergency priority and a capacity-reduction incident, then prints summary statistics |
+| strategy_comparison | Runs the same 22-vehicle demand under fixed-time and adaptive strategies and prints side-by-side metrics |
+| performance_benchmark | Runs TC-013.1 baseline, TC-013.2 adaptive and TC-013.3 incidents+emergency workloads; 1,000 vehicle-step updates per run, 10 repetitions each |
+| reliability_benchmark | Runs 100 seeded 300-step scenarios and an all-roads-blocked stress case |
+
+To run the Release performance and reliability checks locally:
+
+```bash
+cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release
+cmake --build build-release --parallel
+./build-release/performance_benchmark
+./build-release/reliability_benchmark
+```
+
+## Validation evidence
+
+GitHub Actions runs:
+- CMake build and CTest suite.
+- Main simulation and strategy-comparison executables.
+- Ten-repeat performance checks for baseline, adaptive and incident/emergency workloads.
+- 100 seeded reliability runs, each 300 steps, plus an all-roads-blocked stress scenario.
+- AddressSanitizer and UndefinedBehaviorSanitizer.
+- cppcheck static analysis.
+- gcovr line and branch coverage reports as a workflow artifact.
+
+The current coverage report records aggregate core line coverage above 80%, but branch coverage remains below the STP target of 70%. See docs/CODE_COVERAGE_REPORT.md and docs/BRANCH_COVERAGE_REPORT.md.
 
 ## Metrics definitions
 
-- **Steps executed:** number of simulation updates completed.
-- **Vehicles added / arrived / active:** accepted vehicles, vehicles that completed their route during the run, and vehicles not yet arrived.
-- **Total waiting time (seconds):** sum of waiting-time counters for all vehicles at the end of the run.
-- **Average waiting time (seconds per added vehicle):** total waiting time divided by vehicles added; zero when no vehicles were added.
-- **Average queue length (vehicles per step):** total queued vehicle observations divided by executed steps; zero when no steps were executed.
-- **Throughput (vehicles/second):** completed vehicles divided by simulated elapsed time (steps × configured step duration); zero for a zero-step run.
+- Steps executed: simulation updates completed.
+- Vehicles added / arrived / active: accepted vehicles, vehicles that completed their route, and vehicles not yet arrived.
+- Total waiting time: sum of waiting-time counters for all vehicles.
+- Average waiting time: total waiting time divided by vehicles added; zero when no vehicles were added.
+- Average queue length: queued vehicle observations divided by executed steps.
+- Throughput: completed vehicles divided by simulated elapsed time (steps × step duration).
 
-These are simulation-level indicators, not calibrated predictions of real traffic.
+These are simulation indicators, not calibrated predictions of real traffic.
 
-## Comparing strategies
+## Known limitations and deviations
 
-Run `strategy_comparison` after building. The executable prints fixed-time and adaptive results side by side for the same deterministic four-intersection network, 10 vehicles, 1-second steps and 30-step run. Compare arrivals, active vehicles, total wait, average queue and throughput.
+- Capacity is a simplified per-road, per-step model; it is not calibrated to real traffic flow or driver behaviour.
+- Only one capacity-reduction factor is stored per road; overlapping incident objects and incident history are not modelled.
+- The sample comparison is one demand pattern; its result does not prove adaptive control is universally better.
+- There is no Administrator/Operator/Analyst role-enforcement mechanism.
+- Invalid configuration attempts are retained in an in-memory diagnostic log; persistent timestamped audit logging is not implemented.
+- Incident handling and analytics aggregation remain inside Simulation rather than separate IncidentManager and AnalyticsEngine classes.
+- Tests use a custom require() harness rather than GoogleTest/GoogleMock.
+- The CLI has not yet been validated by three first-time users; usability evidence remains outstanding.
 
-The current simplified movement model does not limit how many vehicles can traverse a road in one step based on lane capacity. As a result, the sample workload can produce identical metrics for both strategies. This demonstrates the comparison interface, not a claim that the strategies are equivalent. A meaningful strategy evaluation needs realistic per-road capacity/vehicle discharge behaviour and broader workloads.
+See docs/IMPLEMENTATION_DEVIATIONS.md for the full SRS/SAD/STP deviation register.
 
-## Reliability and performance evidence
+## Final demo checklist (videos excluded from this repository task)
 
-CI builds the project, runs CTest, runs both executables, repeats each demo 10 times and runs the tests under AddressSanitizer and UndefinedBehaviorSanitizer. Review the [Actions runs](https://github.com/rujul-rj/Team11_SE/actions) for the commit-specific results.
-
-For a local sanitizer build on GCC/Clang:
-
-```bash
-cmake -S . -B build-asan -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
-cmake --build build-asan --parallel
-ctest --test-dir build-asan --output-on-failure
-```
-
-Record compiler/version, operating system, commit SHA, workload (intersections, roads, vehicles and steps), elapsed wall time, repeated-run count, failures and sanitizer result. The CI workflow provides repeatability and sanitizer checks, but it does not yet establish that the project's SRS performance target is met. Check the exact target and workload in the SRS and measure elapsed time on the intended environment before claiming performance compliance.
-
-## Demo checklist
-
-1. Configure and build from a clean checkout.
-2. Run CTest and show the passing test summary.
-3. Run `traffic_sim` and explain active, queued, throughput and waiting-time output.
-4. Demonstrate an invalid route or malformed signal configuration being rejected.
-5. Block a road, show waiting, clear the incident and show movement resuming.
-6. Show the end-of-run summary and run `strategy_comparison`; explain that demand and run length are held constant.
-7. Capture a roughly two-minute recording, add its real URL to the release issue, and record the actual freeze commit/tag.
-
-## Known limitations
-
-- The model is intentionally simplified; it does not model calibrated driver behaviour, road-capacity discharge, pedestrian phases, emissions or stochastic arrivals.
-- Performance compliance requires a measured workload and comparison with the SRS target.
-- The comparison uses a small deterministic demand and currently may show identical metrics; it is not sufficient to rank strategies.
-- The demo uses a small network; results should not be generalized to city-scale traffic.
+1. Show the validated network and signal configuration files.
+2. Run CTest and explain the test report and coverage results.
+3. Run traffic_sim; explain density generation, emergency priority, incident capacity reduction and end-of-run metrics.
+4. Run strategy_comparison; explain that the same demand is used for both strategies and discuss the measured trade-off.
+5. Run performance_benchmark and reliability_benchmark; show the CI evidence.
+6. Explain known deviations and why the simulation is not a real traffic controller.
+7. Record the required demo videos separately and attach their real URLs to the release evidence.
 
 ## Requirement-to-test traceability
 
-| Requirement / issue | Coverage |
+| Requirement | Implementation / evidence |
 |---|---|
-| FR-012 / #7, #37 | Invalid and disconnected routes, duplicate intersection/road IDs and unknown road endpoints |
-| SEC-001 / #10, #29, #37 | Malformed configuration and parser diagnostics |
-| SEC-002 / #11, #30, #37 | Invalid lane count, invalid timing, non-finite step duration and negative queue values |
-| FR-008 / #17 | Blocked road queues vehicles; clearing the block allows movement |
-| FR-009 / #18, #38 | Per-step statistics and cumulative summary |
-| FR-010 / #19, #38 | Empty, short and normal run summary |
-| FR-011 / #20, #38 | Fixed-time/adaptive comparison under identical deterministic demand |
-| NFR-005 / #9, #28, #40 | Clean configure/build/test/run commands above |
-| NFR-001/002, SEC-003/004 / #39 | CI repeated runs and sanitizer tests; SRS performance target still requires measured timing |
-| PB-25 / #35 | Demo checklist; attach the actual recording URL and freeze commit when available |
+| FR-001 / FR-012 | config/network_example.cfg and network_config_parser; positive and negative parser tests |
+| FR-002 / FR-005 | config/signals_example.cfg and fixed-time controller tests |
+| FR-003 | seeded LOW / MEDIUM / HIGH vehicle generation tests |
+| FR-004 / BR-05 | vehicle movement, capacity queue and red-signal tests |
+| FR-006 | adaptive signal controller and strategy comparison |
+| FR-007 / BR-01 | emergency vehicle type and integrated signal-priority regression |
+| FR-008 / BR-02 | per-road capacity reduction, block/unblock and invalid-road tests |
+| FR-009 / FR-010 | per-step statistics and end-of-run summary tests |
+| FR-011 | fixed/adaptive same-demand comparison executable |
+| NFR-001 | three 1,000 vehicle-step performance scenarios, 10 repetitions each |
+| NFR-002 | 100 seeded 300-step runs and all-roads-blocked stress scenario |
+| SEC-001 / SEC-002 | network and signal parser negative/boundary tests |
+| SEC-003 | cppcheck plus ASan/UBSan CI |
+| SEC-004 | invalid signal configuration diagnostic log; persistent audit file remains a deviation |
 
 ## Contributing
 
-Create a feature branch, run the build and tests, and open a pull request against `main`. Do not commit generated build directories. Coordinate shared simulation interfaces with the core simulation and signal-control owners before changing them.
+Create a feature branch, run the build and tests, and open a pull request against main. Do not commit generated build directories. Coordinate shared simulation interfaces with the core simulation and signal-control owners before changing them.
