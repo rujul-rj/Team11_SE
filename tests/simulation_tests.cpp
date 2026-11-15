@@ -44,6 +44,34 @@ void testMovement() {
     s.step(); require(s.totalArrived() == 1, "vehicle arrives after second road");
     require(s.stepsExecuted() == 2, "step counter increments");
 }
+void testRoadCapacityReduction() {
+    Simulation simulation(makeNetwork());
+    for (int i = 0; i < 25; ++i) {
+        simulation.addVehicle(Vehicle("CAP-" + std::to_string(i + 1), {"A", "B"}));
+    }
+    simulation.setRoadCapacityReduction("A", "B", 0.5);
+    require(simulation.network().findRoad("A", "B")->capacity() == 40,
+            "Two-lane default road capacity should be 40");
+    require(simulation.network().findRoad("A", "B")->effectiveCapacity() == 20,
+            "Half capacity factor should reduce capacity from 40 to 20");
+    simulation.step();
+    require(simulation.totalArrived() == 20 &&
+            simulation.lastStepStats().queuedVehicles == 5,
+            "Only 20 vehicles should pass when capacity is reduced to 20");
+    simulation.setRoadCapacityReduction("A", "B", 1.0);
+    simulation.step();
+    require(simulation.totalArrived() == 25,
+            "Restoring capacity should release the remaining queue");
+
+    bool threw = false;
+    try { simulation.setRoadCapacityReduction("A", "B", -0.1); }
+    catch (const std::invalid_argument&) { threw = true; }
+    require(threw, "Negative capacity reduction factor should be rejected");
+    threw = false;
+    try { simulation.setRoadCapacityReduction("A", "B", 1.1); }
+    catch (const std::invalid_argument&) { threw = true; }
+    require(threw, "Capacity reduction factor above one should be rejected");
+}
 void testRedAndBlockedQueues() {
     Simulation s(makeNetwork()); s.addVehicle(Vehicle("V1", {"A", "B", "C"}));
     s.setSignal("A", SignalState::Red); s.step();
@@ -228,7 +256,7 @@ void testIntegrationAndInvalidLog() {
 }
 int main() {
     try {
-        testRoutesAndNetworkValidation(); testMovement(); testRedAndBlockedQueues(); testInvalidRouteAndIdentifiers();
+        testRoutesAndNetworkValidation(); testMovement(); testRoadCapacityReduction(); testRedAndBlockedQueues(); testInvalidRouteAndIdentifiers();
         testAutomaticGenerationInterval(); testAutomaticGenerationMaximum();
         testAutomaticGenerationRejectsInvalidRoute(); testAutomaticGenerationRejectsZeroInterval();
         testTrafficDensityLevels();
