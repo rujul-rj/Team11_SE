@@ -6,6 +6,7 @@
 #include "tms/signals/signal.hpp"
 
 #include <cstddef>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -95,6 +96,7 @@ private:
     std::size_t stepsExecuted_{0};
     std::size_t cumulativeQueuedVehicles_{0};
     double cumulativeWaitingTimeSeconds_{0.0};
+    std::map<std::string, std::pair<std::string, std::string>> emergencyRequests_;
     std::size_t nextVehicleNumber_{1};
 
     SimulationStats lastStepStats_;
