@@ -7,6 +7,8 @@
 #include <iostream>
 #include <limits>
 #include <sstream>
+#include <limits>
+#include <cmath>
 #include <stdexcept>
 
 namespace {
@@ -518,6 +520,138 @@ void testSignalParserErrorBranches() {
     require(!parsed.ok() && parsed.errors.size() >= 10,
             "signal parser should report malformed directives, values and references");
 }
+void testRoadConstructorAndStateBranches() {
+    auto throws = [](const auto& operation) {
+        try { operation(); } catch (const std::invalid_argument&) { return true; }
+        return false;
+    };
+    require(throws([] { Road("", "A", "B", 1); }), "empty road ID should fail");
+    require(throws([] { Road("R", "", "B", 1); }), "empty source intersection should fail");
+    require(throws([] { Road("R", "A", "", 1); }), "empty destination intersection should fail");
+    require(throws([] { Road("R", "A", "A", 1); }), "self-connected road should fail");
+    require(throws([] { Road("R", "A", "B", 0); }), "zero lanes should fail");
+    require(throws([] { Road("R", "A", "B", std::numeric_limits<int>::max()); }),
+            "unrepresentable default capacity should fail");
+    require(throws([] { Road("R", "A", "B", 1, 0); }), "zero explicit capacity should fail");
+    require(throws([] { Road("R", "A", "B", 0, 10); }), "zero lanes with explicit capacity should fail");
+
+    Road road("R", "A", "B", 2, 40, true);
+    require(road.isBlocked() && road.capacity() == 40 && road.lanes() == 2,
+            "explicit road constructor should preserve capacity and blocked state");
+    road.setBlocked(false);
+    require(!road.isBlocked(), "road should unblock");
+    road.setCapacityReductionFactor(0.0);
+    require(road.effectiveCapacity() == 0, "zero capacity factor should stop discharge");
+    road.setCapacityReductionFactor(1.0);
+    require(road.effectiveCapacity() == 40 && road.capacityReductionFactor() == 1.0,
+            "full capacity factor should restore base capacity");
+    require(throws([&] { road.setCapacityReductionFactor(std::numeric_limits<double>::quiet_NaN()); }),
+            "non-finite capacity factor should fail");
+}
+
+void testVehicleBoundaryBranches() {
+    auto throws = [](const auto& operation) {
+        try { operation(); } catch (const std::invalid_argument&) { return true; }
+        return false;
+    };
+    require(throws([] { Vehicle("", {"A", "B"}); }), "empty vehicle ID should fail");
+    require(throws([] { Vehicle("V", {}); }), "empty vehicle route should fail");
+    require(throws([] { Vehicle("V", {"A", ""}); }), "empty route stop should fail");
+
+    Vehicle normal("N", {"A", "B"});
+    require(!normal.isEmergency() && normal.type() == VehicleType::Normal,
+            "normal vehicle type should be preserved");
+    require(normal.currentIntersection() == "A" && normal.nextIntersection() &&
+            *normal.nextIntersection() == "B",
+            "vehicle should expose current and next intersection");
+    normal.waitOneStep(0.0);
+    normal.waitOneStep(0.5);
+    require(normal.waitingTimeSeconds() == 0.5, "zero and fractional wait durations should be handled");
+    normal.moveToNextIntersection();
+    require(normal.hasArrived() && normal.nextIntersection() == nullptr &&
+            normal.currentIntersection() == "B",
+            "vehicle should expose arrived state and no next intersection");
+    normal.moveToNextIntersection();
+    require(normal.currentIntersection() == "B", "moving an arrived vehicle should be a no-op");
+    require(throws([&] { normal.waitOneStep(-0.1); }),
+            "negative waiting duration should fail");
+
+    Vehicle emergency("E", {"A", "B"}, VehicleType::Emergency);
+    require(emergency.isEmergency(), "emergency vehicle type should be recognized");
+}
+
+void testSimulationBoundaryAndFacadeBranches() {
+    auto network = makeNetwork();
+    Simulation simulation(network);
+    auto throws = [](const auto& operation) {
+        try { operation(); } catch (const std::invalid_argument&) { return true; }
+        return false;
+    };
+    require(throws([&] { simulation.addVehicle(Vehicle("BAD", {"A", "Z"})); }),
+            "invalid vehicle route should be rejected");
+    simulation.addVehicle(Vehicle("DUP", {"A", "B"}));
+    require(throws([&] { simulation.addVehicle(Vehicle("DUP", {"A", "C"})); }),
+            "duplicate vehicle ID should be rejected");
+    require(throws([&] { simulation.configureVehicleGeneration({}, 1, 1); }),
+            "empty generation route set with positive maximum should fail");
+    require(throws([&] { simulation.configureVehicleGeneration({{"A", "Z"}}, 1, 1); }),
+            "invalid generation route should fail");
+
+    Simulation emptyGenerator(network);
+    emptyGenerator.configureVehicleGeneration({}, 1, 0);
+    emptyGenerator.step();
+    require(emptyGenerator.vehicles().empty(),
+            "empty zero-maximum generator should safely produce no vehicles");
+
+    Simulation collision(network);
+    collision.addVehicle(Vehicle("AUTO-1", {"A", "B"}));
+    collision.configureVehicleGeneration({{"A", "B"}}, 1, 1, 42);
+    collision.step();
+    require(collision.vehicles().size() == 2 &&
+            collision.vehicles()[1].id() == "AUTO-2",
+            "automatic ID generation should skip a colliding manual ID");
+
+    Simulation fractional(network, 0.5);
+    fractional.addVehicle(Vehicle("F", {"A", "B"}));
+    fractional.step();
+    require(fractional.stepsExecuted() == 1,
+            "fractional step should execute without advancing whole signal seconds");
+    fractional.step();
+    require(fractional.stepsExecuted() == 2,
+            "fractional remainder should advance the signal clock on the next step");
+
+    require(throws([&] { simulation.setSignal("UNKNOWN", SignalState::Green); }),
+            "unknown signal intersection should throw");
+    require(throws([&] { simulation.setRoadBlocked("A", "Z", true); }),
+            "unknown road block request should throw");
+    require(throws([&] { simulation.setRoadCapacityReduction("A", "Z", 0.5); }),
+            "unknown road capacity request should throw");
+
+    auto unknownSignal = cfg();
+    unknownSignal.intersection_id = "Z";
+    require(!simulation.configureSignal(unknownSignal).ok,
+            "signal config for unknown intersection should fail");
+    auto wrongOutgoing = cfg();
+    wrongOutgoing.phases[1].roads = {"BC"};
+    require(!simulation.configureSignal(wrongOutgoing).ok,
+            "signal phase referencing a non-outgoing road should fail");
+    auto validSignal = cfg();
+    validSignal.phases[1].roads = {"AC"};
+    require(simulation.configureSignal(validSignal).ok,
+            "valid outgoing road signal config should succeed");
+    require(!simulation.configureSignal(validSignal).ok,
+            "duplicate signal controller config should fail");
+    require(simulation.emergencyArrived("A", "AB"),
+            "simulation should forward a valid emergency arrival");
+    require(simulation.emergencyPassed("A", "AB"),
+            "simulation should forward a valid emergency passage");
+    require(!simulation.emergencyArrived("UNKNOWN", "AB") &&
+            !simulation.emergencyPassed("UNKNOWN", "AB"),
+            "simulation emergency wrappers should fail safely for unknown intersection");
+    simulation.step(); // configured controller with no queue exercises zero-queue refresh
+    const Simulation& constSimulation = simulation;
+    (void)constSimulation.signalManager();
+}
 void testIntegrationAndInvalidLog() {
     using namespace tms::signals;
     auto n = makeNetwork(); n.addRoad(Road("AX", "A", "C", 1)); Simulation s(n);
@@ -538,7 +672,8 @@ int main() {
         testGenerationSeedReproducibility(); testTrafficDensityLevels();
         testConstructorBoundaries(); testSummaryEmptyShortAndNormal(); testConfigValidationAndParser();
         testFixedTime(); testAdaptive(); testEmergency(); testEmergencyVehicleIntegration(); testPersistentInvalidConfigurationLogging(); testSignalValidationBranches(); testSignalControllerBranches();
-        testSignalManagerFacadeBranches(); testSignalParserErrorBranches(); testIntegrationAndInvalidLog();
+        testSignalManagerFacadeBranches(); testSignalParserErrorBranches(); testRoadConstructorAndStateBranches();
+        testVehicleBoundaryBranches(); testSimulationBoundaryAndFacadeBranches(); testIntegrationAndInvalidLog();
         std::cout << "All simulation, generation, summary, and signal tests passed.\n"; return EXIT_SUCCESS;
     } catch (const std::exception& e) {
         std::cerr << "TEST FAILURE: " << e.what() << '\n'; return EXIT_FAILURE;
