@@ -41,5 +41,7 @@
 - [ ] Rehearse the live CLI demonstration on the final merged commit.
 - [ ] Prepare answers on why the capacity model is simplified and why the adaptive comparison result is scenario-specific.
 
+- [x] Latest all-green CI run: https://github.com/rujul-rj/Team11_SE/actions/runs/43694595234 (all six jobs passed).
+
 ## Excluded
 Demo videos are intentionally not included in this task's completion scope.
