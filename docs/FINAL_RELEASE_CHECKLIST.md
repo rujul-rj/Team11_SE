@@ -36,7 +36,7 @@
 
 ## Presentation and viva (non-video)
 - [x] Documented the architecture, API boundaries, known deviations and capacity-model assumptions.
-- [ ] Prepare final slides and a concise requirement-to-test traceability explanation.
+- [x] Draft an 11-slide final presentation deck has been prepared as a separate PPTX artifact; review it and add any verified team-contribution details before presenting.
 - [ ] Prepare each member's actual PR/code contribution and Agile planning explanation.
 - [ ] Rehearse the live CLI demonstration on the final merged commit.
 - [ ] Prepare answers on why the capacity model is simplified and why the adaptive comparison result is scenario-specific.
