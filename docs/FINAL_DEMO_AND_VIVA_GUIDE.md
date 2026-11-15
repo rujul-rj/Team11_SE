@@ -28,7 +28,7 @@ Interpretation: adaptive control reduced waiting time and average queue for this
 
 ## QA evidence to show
 
-- Unit regression: 21 test functions in one CTest executable; latest successful workflow run is linked from the Unit Test Report.
+- Unit regression: 28 test functions in one CTest executable; latest successful workflow run is linked from the Unit Test Report.
 - Static analysis: cppcheck warning/performance/portability checks.
 - Runtime safety: AddressSanitizer and UndefinedBehaviorSanitizer.
 - Performance: TC-013.1 baseline, TC-013.2 adaptive and TC-013.3 incidents+emergency; each runs 1,000 vehicle-step updates 10 times.
