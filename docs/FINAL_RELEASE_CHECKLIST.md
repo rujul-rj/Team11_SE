@@ -1,35 +1,44 @@
 # Final Release Checklist (excluding demo videos)
 
 ## Repository and integration
-- [ ] Review and merge the final-evaluation-prep PR after CI passes.
-- [ ] Confirm PR #42 recovery work is integrated; do not force-merge the diverged branch.
-- [ ] Reconcile backlog issues with the final code and close only verified completed items.
-- [ ] Confirm clean clone/build/test/run instructions work on a second machine.
-- [ ] Record the final commit SHA and create a release tag after sign-off.
+- [x] Recovery implementation from PR #42 has been carried onto the current mainline in the final-evaluation-prep branch and proposed in PR #43.
+- [ ] Review and merge PR #43; it is intentionally left open for repository-owner review.
+- [ ] Close PR #42 as superseded only after PR #43 is approved and merged.
+- [ ] Reconcile the open backlog issues with the merged code and close only verified completed items.
+- [x] README now documents clean build, test, run, configuration, performance and reliability workflows.
+- [ ] Verify a clean clone/build/run on a second machine.
+- [ ] Record the final merged commit SHA and create a release tag after sign-off.
 
 ## Requirements and design documents
-- [ ] Review approved SRS, SAD and Test Plan against the faculty checklist.
-- [ ] Confirm IEEE formatting, functional/non-functional requirements, security objectives/requirements, architecture and UML diagrams, API design, error handling and traceability.
-- [ ] Confirm Test Plan Section 5.1 is dedicated to security validation.
-- [ ] Confirm 7–10 or more test cases cover functional and non-functional requirements.
-- [ ] Document every approved deviation from SRS/SAD.
+- [x] Added SRS security-objectives addendum and SAD security/API/error-handling addendum.
+- [x] Added an implementation-deviation register covering role control, module boundaries, persistent logging and tooling differences.
+- [x] Added a revised Section 5.1 security-validation addendum.
+- [ ] Integrate the addenda into the approved consolidated SRS/SAD/STP PDF; the existing PDF has not been rewritten.
+- [ ] Complete the faculty checklist audit of IEEE formatting, UML diagrams, API design, error-handling protocols and full traceability matrix.
+- [ ] Verify the GitHub Project board and sprint assignments against the final code.
+- [x] Updated the final-evaluation test matrix to 10 grouped cases covering FR/NFR/security requirements.
+- [ ] Update the original STP test cases and obtain faculty/team approval for documented deviations.
 
 ## QA evidence
-- [ ] Update the original test cases for sprint changes.
-- [ ] Attach successful final-commit Unit Test Report.
-- [ ] Execute and sign off System Validation Report.
-- [ ] Generate and attach Code Coverage Report.
-- [ ] Generate and attach Branch Coverage Report.
-- [ ] Measure the SRS performance target on the specified workload/environment.
-- [ ] Record sanitizer and repeated-run results.
+- [x] Unit Test Report updated; 20 test functions pass under CTest on the CI commit.
+- [x] System Validation Report updated with main simulation, emergency, incident and strategy-comparison evidence.
+- [x] Code Coverage Report generated; aggregate core line coverage 83.70%.
+- [x] Branch Coverage Report generated; 49.87%, below the STP 70% target. More branch tests are required.
+- [x] cppcheck 2.19.0 static-analysis job passes.
+- [x] AddressSanitizer and UndefinedBehaviorSanitizer job passes.
+- [x] TC-013.1, TC-013.2 and TC-013.3 performance workloads each pass 10 repetitions on the hosted x86_64 4-CPU / 15-GiB runner.
+- [x] TC-014 reliability job passes 100 seeded 300-step runs plus the all-roads-blocked stress case.
+- [ ] Confirm that the hosted runner is accepted as the reference machine, or repeat NFR-001 on the team's designated desktop/laptop.
+- [ ] Raise core-module branch coverage to at least 70%; Road and signal-control module coverage still need improvement.
+- [ ] Implement persistent timestamped SEC-004 logging and attach the three-entry/no-false-entry/log-injection evidence.
+- [ ] Complete the three-first-time-user NFR-005 usability walkthrough and record steps/results.
 
 ## Presentation and viva (non-video)
-- [ ] Prepare architecture and component explanation.
-- [ ] Prepare requirement-to-test traceability explanation.
-- [ ] Prepare explanation of fixed-time, adaptive and emergency priority logic.
-- [ ] Prepare known limitations and design trade-offs, especially the current road-capacity limitation in strategy comparison.
-- [ ] Prepare each member's PR/code contribution and Agile planning explanation.
-- [ ] Rehearse the live CLI demonstration.
+- [x] Documented the architecture, API boundaries, known deviations and capacity-model assumptions.
+- [ ] Prepare final slides and a concise requirement-to-test traceability explanation.
+- [ ] Prepare each member's actual PR/code contribution and Agile planning explanation.
+- [ ] Rehearse the live CLI demonstration on the final merged commit.
+- [ ] Prepare answers on why the capacity model is simplified and why the adaptive comparison result is scenario-specific.
 
 ## Excluded
-Demo videos are intentionally not included in this checklist's completion scope.
+Demo videos are intentionally not included in this task's completion scope.
