@@ -9,8 +9,8 @@ namespace {
 TrafficNetwork makeNetwork() {
     TrafficNetwork network;
     for (const char* id : {"A", "B", "C", "D"}) network.addIntersection(Intersection(id));
-    network.addRoad(Road("AB", "A", "B", 1));
-    network.addRoad(Road("AC", "A", "C", 1));
+    network.addRoad(Road("AB", "A", "B", 1, 2));
+    network.addRoad(Road("AC", "A", "C", 1, 2));
     network.addRoad(Road("BD", "B", "D", 1));
     network.addRoad(Road("CD", "C", "D", 1));
     return network;
@@ -38,9 +38,9 @@ Simulation runScenario(tms::signals::Strategy strategy) {
         throw std::runtime_error(message);
     }
     // Same deterministic demand for both strategies.
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 22; ++i) {
         const std::string id = "V" + std::to_string(i + 1);
-        simulation.addVehicle(Vehicle(id, i % 2 == 0
+        simulation.addVehicle(Vehicle(id, i < 20
             ? std::vector<std::string>{"A", "B", "D"}
             : std::vector<std::string>{"A", "C", "D"}));
     }
@@ -56,7 +56,7 @@ int main() {
         const auto a = fixed.summary();
         const auto b = adaptive.summary();
 
-        std::cout << "Strategy comparison (same network, 10 vehicles, 30 one-second steps)\n";
+        std::cout << "Strategy comparison (same network, 22 vehicles (20 on AB, 2 on AC), 30 one-second steps)\n";
         std::cout << std::left << std::setw(30) << "Metric"
                   << std::right << std::setw(16) << "Fixed-time"
                   << std::setw(16) << "Adaptive" << '\n';
