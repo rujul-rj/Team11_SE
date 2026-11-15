@@ -56,6 +56,11 @@ public:
         const std::string& to,
         bool blocked
     );
+    void setRoadCapacityReduction(
+        const std::string& from,
+        const std::string& to,
+        double factor
+    );
 
     tms::signals::ValidationResult configureSignal(
         const tms::signals::IntersectionSignalConfig& config
