@@ -128,3 +128,17 @@ jobs:
         run: |
           cppcheck --version
           cppcheck --enable=warning,performance,portability --inline-suppr --suppress=missingIncludeSystem --error-exitcode=1 --std=c++17 -I include -I . include src tms
+
+  reliability:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up CMake
+        uses: lukka/get-cmake@latest
+      - name: Configure Release reliability build
+        run: cmake -S . -B build-reliability -DCMAKE_BUILD_TYPE=Release
+      - name: Build reliability benchmark
+        run: cmake --build build-reliability --target reliability_benchmark --parallel 2
+      - name: Run 100 seeded reliability scenarios and long-run stress
+        run: ./build-reliability/reliability_benchmark
