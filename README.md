@@ -115,7 +115,7 @@ These are simulation indicators, not calibrated predictions of real traffic.
 - Only one capacity-reduction factor is stored per road; overlapping incident objects and incident history are not modelled.
 - The sample comparison is one demand pattern; its result does not prove adaptive control is universally better.
 - There is no Administrator/Operator/Analyst role-enforcement mechanism.
-- Invalid configuration attempts are retained in an in-memory diagnostic log; persistent timestamped audit logging is not implemented.
+- Invalid signal and network configuration attempts are retained in memory and appended to logs/invalid-config.log with timestamps and newline sanitization.
 - Incident handling and analytics aggregation remain inside Simulation rather than separate IncidentManager and AnalyticsEngine classes.
 - Tests use a custom require() harness rather than GoogleTest/GoogleMock.
 - The CLI has not yet been validated by three first-time users; usability evidence remains outstanding.
