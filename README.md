@@ -155,7 +155,7 @@ See docs/IMPLEMENTATION_DEVIATIONS.md for the full SRS/SAD/STP deviation registe
 
 - docs/FINAL_DEMO_AND_VIVA_GUIDE.md — live demo flow and viva topics.
 - docs/FINAL_RELEASE_CHECKLIST.md — completed and remaining evaluation items.
-- docs/BACKLOG_RECONCILIATION.md — issue-by-issue closeout plan for the 40 open backlog issues.
+- docs/BACKLOG_RECONCILIATION.md — issue-by-issue closeout record: 30 issues closed, 10 remain open for sign-off.
 - docs/QA_TEST_CASES.md — updated SRS traceability matrix.
 - docs/UNIT_TEST_REPORT.md and docs/SYSTEM_VALIDATION_REPORT.md — automated and system evidence.
 - docs/CODE_COVERAGE_REPORT.md and docs/BRANCH_COVERAGE_REPORT.md — coverage metrics and gaps.
