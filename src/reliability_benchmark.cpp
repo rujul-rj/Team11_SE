@@ -29,6 +29,7 @@ std::vector<std::vector<std::string>> routes() {
 }
 
 int main() {
+    try {
     constexpr std::size_t kRuns = 100;
     constexpr std::size_t kSteps = 300; // 10x a 30-step normal run
     const auto network = makeNetwork();
@@ -70,4 +71,8 @@ int main() {
               << " seeded runs completed " << kSteps
               << " steps each; all-roads-blocked stress scenario completed.\n";
     return 0;
+    } catch (const std::exception& error) {
+        std::cerr << "Reliability benchmark failed: " << error.what() << '\\n';
+        return 3;
+    }
 }
