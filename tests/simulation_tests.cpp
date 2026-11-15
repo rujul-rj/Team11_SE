@@ -331,6 +331,193 @@ void testPersistentInvalidConfigurationLogging() {
     require(manager.invalid_attempt_log().front().find("T") != std::string::npos,
             "log entries should include a timestamp");
 }
+void testSignalValidationBranches() {
+    using namespace tms::signals;
+    auto invalid = [](const IntersectionSignalConfig& config) { return !validate(config).ok; };
+
+    auto x = cfg(); x.intersection_id.clear(); require(invalid(x), "empty intersection ID should fail");
+    x = cfg(); x.intersection_id = "ABCDEFGHIJK"; require(invalid(x), "overlong intersection ID should fail");
+    x = cfg(); x.intersection_id = "bad id"; require(invalid(x), "invalid intersection characters should fail");
+    x = cfg(); x.phases.resize(1); require(invalid(x), "one phase should fail");
+    x = cfg(); x.phases.resize(9); require(invalid(x), "more than eight phases should fail");
+    x = cfg(); x.all_red_s = 0; require(invalid(x), "all-red below range should fail");
+    x = cfg(); x.all_red_s = 11; require(invalid(x), "all-red above range should fail");
+    x = cfg(); x.phases[0].name = "bad name"; require(invalid(x), "invalid phase name should fail");
+    x = cfg(); x.phases[1].name = x.phases[0].name; require(invalid(x), "duplicate phase name should fail");
+    x = cfg(); x.phases[0].roads.clear(); require(invalid(x), "phase without roads should fail");
+    x = cfg(); x.phases[0].roads = {"bad!"}; require(invalid(x), "invalid road identifier should fail");
+    x = cfg(); x.phases[1].roads = {"AB"}; require(invalid(x), "road assigned to two phases should fail");
+    x = cfg(); x.phases[0].green_s = 4; require(invalid(x), "green below range should fail");
+    x = cfg(); x.phases[0].green_s = 121; require(invalid(x), "green above range should fail");
+    x = cfg(); x.phases[0].yellow_s = 1; require(invalid(x), "yellow below range should fail");
+    x = cfg(); x.phases[0].yellow_s = 11; require(invalid(x), "yellow above range should fail");
+    x = cfg(); x.strategy = Strategy::ADAPTIVE; x.adaptive.min_green_s = 4; require(invalid(x), "adaptive minimum below range should fail");
+    x = cfg(); x.strategy = Strategy::ADAPTIVE; x.adaptive.max_green_s = 121; require(invalid(x), "adaptive maximum above range should fail");
+    x = cfg(); x.strategy = Strategy::ADAPTIVE; x.adaptive.min_green_s = 9; x.adaptive.max_green_s = 8; require(invalid(x), "adaptive max below min should fail");
+    x = cfg(); x.strategy = Strategy::ADAPTIVE; x.adaptive.extension_threshold = 0; require(invalid(x), "zero adaptive threshold should fail");
+    x = cfg(); x.strategy = Strategy::ADAPTIVE; x.adaptive.extension_threshold = 1001; require(invalid(x), "adaptive threshold above range should fail");
+
+    require(std::string(to_string(static_cast<SignalState>(99))) == "RED",
+            "unknown signal state should fail safe to RED");
+    require(std::string(to_string(static_cast<Strategy>(99))) == "fixed",
+            "unknown strategy enum should use fixed fallback text");
+    require(std::string(to_string(static_cast<Stage>(99))) == "ALL_RED",
+            "unknown controller stage should fail safe to ALL_RED");
+}
+
+void testSignalControllerBranches() {
+    using namespace tms::signals;
+    IntersectionSignalConfig config;
+    config.intersection_id = "A";
+    config.strategy = Strategy::FIXED_TIME;
+    config.phases = {
+        {"P0", {"AB"}, 5, 2},
+        {"P1", {"AC"}, 5, 2},
+        {"P2", {"AD"}, 5, 2}
+    };
+    config.all_red_s = 1;
+    SignalController controller(config);
+
+    require(controller.invariants_hold(), "initial controller invariants should hold");
+    require(controller.state("UNKNOWN") == SignalState::RED,
+            "unknown road should be RED");
+    require(controller.set_queue_length("UNKNOWN", 1) == false,
+            "unknown queue road should be rejected");
+    require(controller.set_queue_length("AB", -1) == false,
+            "negative queue length should be rejected");
+    require(controller.set_queue_length("AB", 4), "known queue should be updated");
+    controller.set_queue_lengths({{"AC", 3}, {"AD", 8}, {"UNKNOWN", 4}, {"AB", -2}});
+    require(controller.snapshot().size() == 3, "snapshot should include configured roads");
+    require(!controller.request_emergency("UNKNOWN"), "unknown emergency road should be rejected");
+    require(!controller.clear_emergency("UNKNOWN"), "unknown emergency clear should be rejected");
+
+    require(controller.request_emergency("AC"), "first emergency request should be accepted");
+    require(controller.request_emergency("AC"), "duplicate emergency request should increment count");
+    require(controller.request_emergency("AD"), "second approach emergency should be queued");
+    controller.tick(1);
+    require(controller.stage() == Stage::YELLOW, "emergency on another approach should trigger yellow");
+    controller.tick(2);
+    require(controller.stage() == Stage::ALL_RED, "yellow should transition to all-red");
+    require(controller.request_emergency("AB"), "emergency arriving during clearance should be queued");
+    controller.tick(1);
+    require(controller.current_phase() == 1 && controller.stage() == Stage::GREEN,
+            "first queued emergency should receive green after clearance");
+    require(controller.clear_emergency("AC") && controller.emergency_active(),
+            "first clear should decrement duplicate emergency count");
+    require(controller.clear_emergency("AC"), "second clear should remove first approach request");
+    controller.tick(1);
+    require(controller.stage() == Stage::YELLOW, "next queued emergency should trigger a safe transition");
+    controller.tick(3);
+    require(controller.current_phase() == 2 && controller.stage() == Stage::GREEN,
+            "second queued emergency should receive green in arrival order");
+    require(controller.clear_emergency("AD"), "second approach request should clear");
+    controller.tick(1);
+    controller.tick(3);
+    require(controller.current_phase() == 0 && controller.stage() == Stage::GREEN,
+            "emergency arriving during clearance should be served next");
+    require(controller.clear_emergency("AB"), "last emergency request should clear");
+    require(!controller.clear_emergency("AB"), "clearing absent emergency should fail");
+    require(!controller.emergency_active(), "emergency queue should be empty after all clears");
+    require(controller.invariants_hold(), "controller invariants should hold after emergency sequence");
+
+    const long long beforeNegativeTick = controller.time();
+    controller.tick(-3);
+    require(controller.time() == beforeNegativeTick, "negative tick should not advance time");
+
+    config.strategy = Strategy::ADAPTIVE;
+    config.adaptive.min_green_s = 5;
+    config.adaptive.max_green_s = 5;
+    config.adaptive.extension_threshold = 1;
+    SignalController adaptive(config);
+    adaptive.set_queue_lengths({{"AB", 0}, {"AC", 1}, {"AD", 9}});
+    adaptive.tick(5);
+    require(adaptive.stage() == Stage::YELLOW, "adaptive controller should end green below queue threshold");
+    adaptive.tick(3);
+    require(adaptive.current_phase() == 2, "adaptive controller should select the highest queued phase");
+    require(adaptive.invariants_hold(), "adaptive controller invariants should hold");
+}
+
+void testSignalManagerFacadeBranches() {
+    using namespace tms::signals;
+    SignalManager manager;
+    std::istringstream valid(
+        "intersection A strategy fixed all_red 1\n"
+        "phase A NS green 5 yellow 2 roads AB\n"
+        "phase A EW green 5 yellow 2 roads AC\n"
+        "intersection B strategy fixed all_red 1\n"
+        "phase B NS green 5 yellow 2 roads BA\n"
+        "phase B EW green 5 yellow 2 roads BC\n"
+    );
+    const auto configured = manager.configure_from_stream(valid, "valid-config");
+    require(configured.ok && manager.has("A") && manager.has("B"),
+            "valid multi-intersection stream should configure all controllers");
+    require(manager.get("missing") == nullptr, "unknown mutable controller lookup should return null");
+    const SignalManager& constManager = manager;
+    require(constManager.get("missing") == nullptr, "unknown const controller lookup should return null");
+    require(manager.state("missing", "AB") == SignalState::RED &&
+            !manager.can_proceed("missing", "AB"),
+            "unknown intersection should fail safe to RED");
+    require(!manager.emergency_arrived("missing", "AB") &&
+            !manager.emergency_passed("missing", "AB") &&
+            !manager.update_queue("missing", "AB", 1),
+            "unknown intersection operations should fail safely");
+    require(!manager.emergency_arrived("A", "UNKNOWN"),
+            "unknown emergency approach should be rejected");
+    require(!manager.emergency_passed("A", "AB"),
+            "clearing an absent emergency should fail");
+    require(!manager.update_queue("A", "UNKNOWN", 2) &&
+            manager.update_queue("A", "AB", 2),
+            "queue update should reject unknown roads and accept known roads");
+    manager.set_strategy_all(Strategy::ADAPTIVE);
+    require(manager.get("A")->strategy() == Strategy::ADAPTIVE,
+            "set_strategy_all should update all configured controllers");
+    manager.tick(1);
+
+    require(!manager.configure(cfg()).ok,
+            "configuring an already-configured intersection should fail");
+    std::istringstream empty;
+    require(!manager.configure_from_stream(empty, "empty-config").ok,
+            "empty configuration stream should be rejected");
+    std::istringstream duplicateBatch(
+        "intersection C strategy fixed all_red 1\n"
+        "phase C NS green 5 yellow 2 roads CA\n"
+        "phase C EW green 5 yellow 2 roads CB\n"
+        "intersection C strategy fixed all_red 1\n"
+        "phase C NS green 5 yellow 2 roads CA\n"
+        "phase C EW green 5 yellow 2 roads CB\n"
+    );
+    require(!manager.configure_from_stream(duplicateBatch, "duplicate-batch").ok &&
+            !manager.has("C"),
+            "duplicate batch IDs should reject the entire configuration atomically");
+    require(!manager.invalid_attempt_log().empty(),
+            "manager facade errors should be retained in the diagnostic log");
+    manager.clear();
+    require(!manager.has("A") && manager.get("A") == nullptr,
+            "clear should remove configured controllers");
+}
+
+void testSignalParserErrorBranches() {
+    using namespace tms::signals;
+    std::istringstream malformed(
+        "# comment and blank line\n"
+        "intersection\n"
+        "intersection A strategy\n"
+        "intersection A strategy adaptive all_red nope\n"
+        "intersection B strange value\n"
+        "adaptive\n"
+        "adaptive Z min_green 5\n"
+        "adaptive A mystery 1 min_green bad threshold\n"
+        "phase\n"
+        "phase Z P green 5 roads R1\n"
+        "phase A P green nope yellow 2\n"
+        "phase A P unknown 2 roads AB\n"
+        "phase A P green 5 yellow\n"
+        "unknown directive\n"
+    );
+    const auto parsed = parse_signal_config(malformed);
+    require(!parsed.ok() && parsed.errors.size() >= 10,
+            "signal parser should report malformed directives, values and references");
+}
 void testIntegrationAndInvalidLog() {
     using namespace tms::signals;
     auto n = makeNetwork(); n.addRoad(Road("AX", "A", "C", 1)); Simulation s(n);
@@ -350,7 +537,8 @@ int main() {
         testAutomaticGenerationRejectsInvalidRoute(); testAutomaticGenerationRejectsZeroInterval();
         testGenerationSeedReproducibility(); testTrafficDensityLevels();
         testConstructorBoundaries(); testSummaryEmptyShortAndNormal(); testConfigValidationAndParser();
-        testFixedTime(); testAdaptive(); testEmergency(); testEmergencyVehicleIntegration(); testPersistentInvalidConfigurationLogging(); testIntegrationAndInvalidLog();
+        testFixedTime(); testAdaptive(); testEmergency(); testEmergencyVehicleIntegration(); testPersistentInvalidConfigurationLogging(); testSignalValidationBranches(); testSignalControllerBranches();
+        testSignalManagerFacadeBranches(); testSignalParserErrorBranches(); testIntegrationAndInvalidLog();
         std::cout << "All simulation, generation, summary, and signal tests passed.\n"; return EXIT_SUCCESS;
     } catch (const std::exception& e) {
         std::cerr << "TEST FAILURE: " << e.what() << '\n'; return EXIT_FAILURE;
