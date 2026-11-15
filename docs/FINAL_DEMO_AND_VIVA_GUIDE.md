@@ -56,8 +56,8 @@ Be ready to explain:
 Use GitHub PRs and the actual commits as the source of truth. The currently visible PR history shows:
 
 - PR #41 — authored by prohan1287; merged to main; title: “Implement traffic simulation and signal control strategies”.
-- PR #42 — authored by ajjaiahm; still open and based on feature/core-simulation; title: “Sprint recovery: validation, simulation summaries and strategy comparison”.
-- PR #43 — authored by rujul-rj; final-evaluation-prep branch; integrates recovery work and QA documentation.
+- PR #42 — authored by ajjaiahm; closed as superseded after its recovery work was verified in PR #43.
+- PR #43 — authored by rujul-rj; merged into main as 0111898c3cf2b7437f27f976ef3818b13e88dabf; includes recovery work and final QA documentation.
 
 Before the viva, each member should identify their own exact files/functions and commit/PR evidence. The repository PR list does not show a separate PR for every team member; do not assign unverified code ownership to a member.
 
@@ -67,4 +67,4 @@ Before the viva, each member should identify their own exact files/functions and
 - Confirm the hosted runner is accepted as the designated reference machine or repeat the performance test on the team's desktop/laptop.
 - Record one operator walkthrough demonstrating a basic run in no more than three configuration steps.
 - Integrate the SRS/SAD/STP addenda into the approved consolidated PDF.
-- Complete repository-owner review and merge PR #43; only then reconcile/close superseded PR #42 and backlog issues.
+- PR #43 is merged, PR #42 is closed as superseded, and 30 completed/duplicate backlog issues are closed. Ten issues remain open for the specific sign-offs listed in docs/BACKLOG_RECONCILIATION.md.
