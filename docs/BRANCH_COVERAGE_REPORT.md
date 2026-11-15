@@ -1,28 +1,34 @@
 # Branch Coverage Report
 
 **Repository:** Team11_SE  
-**Commit tested:** 6611142d24af6c5f02a2dd65f143a3dc60ddf21c  
+**Commit tested:** bc2a643ff1067350b0a949dd8233ba3db12a677f  
 **Date:** 15 November 2026  
 **Tool:** gcovr 8.8 / GCC coverage instrumentation  
-**Workflow:** https://github.com/rujul-rj/Team11_SE/actions/runs/43694595234
+**Workflow:** https://github.com/rujul-rj/Team11_SE/actions/runs/43695727436
 
 ## Result
 
-- **Measured branch coverage for the SRS/STP core implementation set (excluding executable entry points and parser/network infrastructure):** 51.23% (417 / 814).
+- **Measured branch coverage for the SRS/STP core implementation set:** 70.02% (570 / 814).
 - **STP exit criterion:** at least 70%.
-- **Status:** Not met.
+- **Aggregate status:** PASS.
 
 ## Per-file branch coverage
 
 | Source file | Branch coverage |
 |---|---:|
 | Intersection.cpp | 75.0% |
-| Road.cpp | 53.7% |
-| Simulation.cpp | 64.0% |
-| Vehicle.cpp | 36.4% |
-| signal.cpp | 43.3% |
+| Road.cpp | 83.3% |
+| Simulation.cpp | 71.3% |
+| Vehicle.cpp | 81.8% |
+| signal.cpp | 67.0% |
 | signal.hpp | 100.0% |
 
-## Required follow-up
+The aggregate threshold is met. The signal.cpp module is 67.0%; if the faculty expects every core file individually to meet 70%, add tests for at least 14 more signal.cpp branch outcomes.
 
-Add branch tests for invalid identifiers and constructor boundaries, signal validation ranges, parser error paths, emergency queue ordering/clearing, unknown signal/road lookups, and error paths in simulation/network APIs. Re-run coverage after each test expansion. Do not state that the STP coverage exit criterion has been achieved until branch coverage reaches at least 70%.
+## Branch-focused tests added
+
+The suite now exercises signal validation boundaries, enum string mappings, fixed/adaptive state transitions, current-approach and queued emergency requests, manager facade error paths, malformed parser directives, road constructor boundaries, vehicle arrival/wait boundaries and simulation configuration/generation edge cases.
+
+## Evidence
+
+The coverage HTML report and Cobertura XML are available in the `team11-coverage-reports` artifact for workflow run 43695727436.
