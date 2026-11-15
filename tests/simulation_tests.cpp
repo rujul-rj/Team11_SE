@@ -201,6 +201,19 @@ void testEmergency() {
     c.tick(1); require(c.state("AX") == tms::signals::SignalState::GREEN, "emergency approach gets green");
     require(c.invariants_hold(), "safe emergency green"); require(c.clear_emergency("AX"), "emergency cleared");
 }
+void testEmergencyVehicleIntegration() {
+    auto network = makeNetwork();
+    network.addRoad(Road("AX", "A", "C", 1));
+    Simulation simulation(network);
+    require(simulation.configureSignal(cfg()).ok,
+            "Signal controller should configure for emergency test");
+    simulation.addVehicle(Vehicle("EV1", {"A", "C"}, VehicleType::Emergency));
+    simulation.run(8);
+    require(simulation.totalArrived() == 1,
+            "Emergency vehicle should receive priority and reach its destination");
+    require(simulation.vehicles().front().waitingTimeSeconds() >= 1.0,
+            "Emergency vehicle should wait for safe yellow/all-red clearance");
+}
 void testIntegrationAndInvalidLog() {
     using namespace tms::signals;
     auto n = makeNetwork(); n.addRoad(Road("AX", "A", "C", 1)); Simulation s(n);
@@ -220,7 +233,7 @@ int main() {
         testAutomaticGenerationRejectsInvalidRoute(); testAutomaticGenerationRejectsZeroInterval();
         testTrafficDensityLevels();
         testConstructorBoundaries(); testSummaryEmptyShortAndNormal(); testConfigValidationAndParser();
-        testFixedTime(); testAdaptive(); testEmergency(); testIntegrationAndInvalidLog();
+        testFixedTime(); testAdaptive(); testEmergency(); testEmergencyVehicleIntegration(); testIntegrationAndInvalidLog();
         std::cout << "All simulation, generation, summary, and signal tests passed.\n"; return EXIT_SUCCESS;
     } catch (const std::exception& e) {
         std::cerr << "TEST FAILURE: " << e.what() << '\n'; return EXIT_FAILURE;
