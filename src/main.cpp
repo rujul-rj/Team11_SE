@@ -35,7 +35,7 @@ int main() {
         std::ofstream auditLog("logs/invalid-config.log", std::ios::app);
         if (!auditLog) throw std::runtime_error("Could not open logs/invalid-config.log.");
         simulation.signalManager().set_log_sink([&auditLog](const std::string& line) {
-            auditLog << line << '\\n';
+            auditLog << line << '\n';
             auditLog.flush();
         });
 
@@ -44,7 +44,7 @@ int main() {
         );
         if (!signalResult.ok) {
             std::string message = "Invalid signal configuration";
-            for (const auto& error : signalResult.errors) message += "\\n - " + error;
+            for (const auto& error : signalResult.errors) message += "\n - " + error;
             throw std::runtime_error(message);
         }
 
