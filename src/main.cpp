@@ -14,7 +14,7 @@ int main() {
         network.addIntersection(Intersection("C"));
 
         network.addRoad(Road("R1", "A", "B", 2));
-        network.addRoad(Road("R2", "B", "C", 1));
+        network.addRoad(Road("R2", "B", "C", 1, 4));
         network.addRoad(Road("R3", "A", "C", 1));
 
         Simulation simulation(network, 1.0);
@@ -46,16 +46,21 @@ int main() {
 
         // Demonstrate vehicles waiting at a red signal at B.
         simulation.setSignal("B", SignalState::Red);
+        simulation.setRoadCapacityReduction("B", "C", 0.5);
 
         std::cout << "Traffic Management System Simulation\n";
         std::cout << "Scenario: A -> B -> C\n";
         std::cout << "Initial vehicles: 2 normal + 1 emergency\n";
-        std::cout << "Automatic generation: MEDIUM density, max 5\n\n";
+        std::cout << "Automatic generation: MEDIUM density, max 5\n";
+        std::cout << "Incident: B->C capacity reduced by 50% until step 8\n\n";
 
         for (int tick = 1; tick <= 12; ++tick) {
             // Release vehicles waiting at B from step 4 onward.
             if (tick == 4) {
                 simulation.setSignal("B", SignalState::Green);
+            }
+            if (tick == 8) {
+                simulation.setRoadCapacityReduction("B", "C", 1.0);
             }
 
             simulation.step();
