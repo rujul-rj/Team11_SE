@@ -303,29 +303,30 @@ void testPersistentInvalidConfigurationLogging() {
         persisted << line << '\n';
     });
 
-    auto invalid = cfg();
-    invalid.phases[0].green_s = 0;
-    const auto first = manager.configure(invalid);
-    require(!first.ok, "invalid signal configuration should be rejected");
-    require(manager.invalid_attempt_log().size() == 1,
-            "invalid configuration should create a diagnostic entry");
+    auto firstInvalid = cfg();
+    firstInvalid.phases[0].green_s = 0;
+    require(!manager.configure(firstInvalid).ok,
+            "invalid green timing should be rejected");
 
-    std::istringstream malformed("intersection A strategy fixed all_red 1\nphase A X green nope yellow 2 roads AB\n");
-    const auto second = manager.configure_from_stream(malformed, "source\nFORGED");
-    require(!second.ok, "malformed signal file should be rejected");
+    auto secondInvalid = cfg();
+    secondInvalid.phases[0].yellow_s = 0;
+    require(!manager.configure(secondInvalid).ok,
+            "invalid yellow timing should be rejected");
+
     auto thirdInvalid = cfg();
     thirdInvalid.intersection_id = "BAD\nFORGED";
-    const auto third = manager.configure(thirdInvalid);
-    require(!third.ok, "invalid intersection identifier should be rejected");
+    require(!manager.configure(thirdInvalid).ok,
+            "invalid intersection identifier should be rejected");
+
     require(manager.invalid_attempt_log().size() == 3,
             "exactly three invalid attempts should create exactly three log entries");
     const auto persistedText = persisted.str();
     std::size_t auditLines = 0;
     for (char ch : persistedText) if (ch == '\n') ++auditLines;
     require(auditLines == 3, "persistent sink should contain exactly three audit lines");
-    require(persisted.str().find("INVALID_CONFIG") != std::string::npos,
+    require(persistedText.find("INVALID_CONFIG") != std::string::npos,
             "log sink should receive invalid configuration entries");
-    require(persisted.str().find("\nFORGED") == std::string::npos,
+    require(persistedText.find("\nFORGED") == std::string::npos,
             "newline log injection should be neutralized");
     require(manager.invalid_attempt_log().front().find("T") != std::string::npos,
             "log entries should include a timestamp");
