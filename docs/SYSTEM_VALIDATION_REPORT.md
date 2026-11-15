@@ -41,7 +41,7 @@ ctest --test-dir build --output-on-failure
 ## 5. Measured CI outputs
 
 - Main simulation: 12 steps, 8 vehicles added, 3 arrived and 5 active; total waiting time 43.00 vehicle-seconds; average waiting time 5.38 seconds/vehicle; average queue length 3.58 vehicles/step; throughput 0.25 vehicles/second.
-- Strategy comparison (same network, 10 vehicles, 30 one-second steps): fixed-time and adaptive each reported 10 arrived, 40.000 vehicle-seconds total wait, 1.333 average queue and 0.333 vehicles/second throughput. Metrics are identical in this simplified model; do not claim a strategy winner.
+- Strategy comparison (same network, 22 vehicles: 20 on AB and 2 on AC, 30 one-second steps): both strategies completed all 22 vehicles; fixed-time total wait 216.000 vehicle-seconds and average queue 7.200; adaptive total wait 156.000 vehicle-seconds and average queue 5.200; both throughput 0.733 vehicles/second. Adaptive performs better on this tested demand, but this is scenario-specific.
 - CTest: 1/1 test executable passed; 100% tests passed. The executable contains 17 test functions.
 - Repeated-run check: both executables completed 10 consecutive runs.
 - ASan/UBSan: build and tests passed.
@@ -50,7 +50,7 @@ ctest --test-dir build --output-on-failure
 
 ## 6. Limitations to disclose
 
-The comparison executable currently uses a simplified movement model that does not constrain vehicle discharge by road capacity. Its sample fixed-time and adaptive metrics may therefore be identical. This is not evidence that the strategies are equivalent or that one is superior. The model is a simulation prototype, not a controller for real traffic infrastructure.
+The comparison executable now applies a simplified per-road capacity limit (default 20 vehicles per lane per simulation step). The sample scenario shows lower waiting time and queue under adaptive control, but the capacity model is not calibrated to real traffic and the result should not be generalized to all demand patterns. The model is a simulation prototype, not a controller for real traffic infrastructure.
 
 ## 7. Sign-off
 
