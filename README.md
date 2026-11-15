@@ -118,7 +118,7 @@ These are simulation indicators, not calibrated predictions of real traffic.
 - Invalid signal and network configuration attempts are retained in memory and appended to logs/invalid-config.log with timestamps and newline sanitization.
 - Incident handling and analytics aggregation remain inside Simulation rather than separate IncidentManager and AnalyticsEngine classes.
 - Tests use a custom require() harness rather than GoogleTest/GoogleMock.
-- The CLI has not yet been validated by three first-time users; usability evidence remains outstanding.
+- The CLI instructions are documented, but no operator walkthrough has yet been recorded to verify that a basic run can be started in no more than three configuration steps.
 
 See docs/IMPLEMENTATION_DEVIATIONS.md for the full SRS/SAD/STP deviation register.
 
