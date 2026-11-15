@@ -271,7 +271,7 @@ void SignalManager::log_invalid(const std::string& source, const std::vector<std
 
     const auto one_line = [](std::string value) {
         for (char& ch : value) {
-            if (ch == '\\n' || ch == '\\r') ch = ' ';
+            if (ch == '\n' || ch == '\r') ch = ' ';
         }
         return value;
     };
