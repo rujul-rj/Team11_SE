@@ -22,7 +22,7 @@
 ## QA evidence
 - [x] Unit Test Report updated; 21 test functions pass under CTest on the CI commit.
 - [x] System Validation Report updated with main simulation, emergency, incident and strategy-comparison evidence.
-- [x] Code Coverage Report generated; aggregate core line coverage 83.70%.
+- [x] Code Coverage Report generated; aggregate core line coverage 84.32%.
 - [x] Branch Coverage Report generated; 51.23%, below the STP 70% target. More branch tests are required.
 - [x] cppcheck 2.19.0 static-analysis job passes.
 - [x] AddressSanitizer and UndefinedBehaviorSanitizer job passes.
