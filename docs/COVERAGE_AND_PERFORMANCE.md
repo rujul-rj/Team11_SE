@@ -30,7 +30,7 @@ mkdir -p docs/coverage
 gcovr --root . --filter 'src/.*' --filter 'tms/.*' \
   --txt docs/coverage/coverage-summary.txt \
   --html-details docs/coverage/index.html \
-  --xml-pretty docs/coverage/coverage.xml --branches
+  --xml-pretty docs/coverage/coverage.xml
 ```
 
 ## Performance validation
