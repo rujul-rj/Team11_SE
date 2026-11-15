@@ -3,6 +3,8 @@
 #include "network_config_parser.h"
 
 #include <exception>
+#include <filesystem>
+#include <fstream>
 #include <fstream>
 #include <string>
 #include <stdexcept>
@@ -29,6 +31,14 @@ int main() {
         if (!signalInput) {
             throw std::runtime_error("Could not open config/signals_example.cfg.");
         }
+        std::filesystem::create_directories("logs");
+        std::ofstream auditLog("logs/invalid-config.log", std::ios::app);
+        if (!auditLog) throw std::runtime_error("Could not open logs/invalid-config.log.");
+        simulation.signalManager().set_log_sink([&auditLog](const std::string& line) {
+            auditLog << line << '\\n';
+            auditLog.flush();
+        });
+
         const auto signalResult = simulation.signalManager().configure_from_stream(
             signalInput, "config/signals_example.cfg"
         );
