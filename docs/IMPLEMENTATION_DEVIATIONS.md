@@ -18,7 +18,7 @@ This document records differences between the approved SRS/SAD/STP baseline and 
 | Test framework | Tests use a lightweight custom require() harness registered with CTest, not GoogleTest/GoogleMock as named in the SRS/STP | Tooling deviation; disclose or migrate |
 | CI/CD | GitHub Actions builds, tests, runs sanitizers and generates coverage artifacts; the STP mentions Jenkins | Tooling deviation; GitHub Actions is the active CI system |
 | Coverage exit criteria | Aggregate core line coverage is 97.85%; aggregate core branch coverage is 70.02% (570/814) | Aggregate thresholds met; signal.cpp is 67.0% individually, so confirm whether per-module branch threshold is required |
-| Usability walkthrough | CLI instructions exist; three first-time users have not been observed completing the workflow | Manual validation remains |
+| Usability walkthrough | CLI instructions exist; no operator walkthrough has been recorded to verify a basic run in no more than three configuration steps | Manual validation remains |
 
 ## Final-evaluation rule
 
