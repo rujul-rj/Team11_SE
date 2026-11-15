@@ -631,27 +631,35 @@ void testSimulationBoundaryAndFacadeBranches() {
     unknownSignal.intersection_id = "Z";
     require(!simulation.configureSignal(unknownSignal).ok,
             "signal config for unknown intersection should fail");
+
+    TrafficNetwork signalNetwork;
+    signalNetwork.addIntersection(Intersection("A"));
+    signalNetwork.addIntersection(Intersection("B"));
+    signalNetwork.addIntersection(Intersection("C"));
+    signalNetwork.addRoad(Road("AB", "A", "B", 1));
+    signalNetwork.addRoad(Road("AC", "A", "C", 1));
+    signalNetwork.addRoad(Road("BC", "B", "C", 1));
+    Simulation signalSimulation(signalNetwork);
+
     auto wrongOutgoing = cfg();
-    wrongOutgoing.intersection_id = "A";
     wrongOutgoing.phases[1].roads = {"BC"};
-    require(!simulation.configureSignal(wrongOutgoing).ok,
+    require(!signalSimulation.configureSignal(wrongOutgoing).ok,
             "signal phase referencing a non-outgoing road should fail");
     auto validSignal = cfg();
-    validSignal.intersection_id = "A";
     validSignal.phases[1].roads = {"AC"};
-    require(simulation.configureSignal(validSignal).ok,
+    require(signalSimulation.configureSignal(validSignal).ok,
             "valid outgoing road signal config should succeed");
-    require(!simulation.configureSignal(validSignal).ok,
+    require(!signalSimulation.configureSignal(validSignal).ok,
             "duplicate signal controller config should fail");
-    require(simulation.emergencyArrived("A", "AB"),
+    require(signalSimulation.emergencyArrived("A", "AB"),
             "simulation should forward a valid emergency arrival");
-    require(simulation.emergencyPassed("A", "AB"),
+    require(signalSimulation.emergencyPassed("A", "AB"),
             "simulation should forward a valid emergency passage");
-    require(!simulation.emergencyArrived("UNKNOWN", "AB") &&
-            !simulation.emergencyPassed("UNKNOWN", "AB"),
+    require(!signalSimulation.emergencyArrived("UNKNOWN", "AB") &&
+            !signalSimulation.emergencyPassed("UNKNOWN", "AB"),
             "simulation emergency wrappers should fail safely for unknown intersection");
-    simulation.step(); // configured controller with no queue exercises zero-queue refresh
-    const Simulation& constSimulation = simulation;
+    signalSimulation.step(); // configured controller with no queue exercises zero-queue refresh
+    const Simulation& constSimulation = signalSimulation;
     (void)constSimulation.signalManager();
 }
 void testIntegrationAndInvalidLog() {
