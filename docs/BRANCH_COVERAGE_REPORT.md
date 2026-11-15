@@ -8,7 +8,7 @@
 
 ## Result
 
-- **Measured branch coverage excluding executable entry points:** 51.23% (417 / 814).
+- **Measured branch coverage for the SRS/STP core implementation set (excluding executable entry points and parser/network infrastructure):** 51.23% (417 / 814).
 - **STP exit criterion:** at least 70%.
 - **Status:** Not met.
 
