@@ -86,7 +86,7 @@ jobs:
       - name: Generate line and branch coverage reports
         run: |
           mkdir -p docs/coverage
-          gcovr --root . --filter 'src/.*' --filter 'tms/.*' --txt docs/coverage/coverage-summary.txt --html-details docs/coverage/index.html --xml-pretty docs/coverage/coverage.xml --branches
+          gcovr --root . --filter 'src/.*' --filter 'tms/.*' --txt docs/coverage/coverage-summary.txt --html-details docs/coverage/index.html --xml-pretty docs/coverage/coverage.xml
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4
         with:
