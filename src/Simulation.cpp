@@ -36,7 +36,8 @@ void Simulation::addVehicle(const Vehicle& vehicle) {
 void Simulation::configureVehicleGeneration(
     std::vector<std::vector<std::string>> routes,
     std::size_t intervalSteps,
-    std::size_t maxVehicles
+    std::size_t maxVehicles,
+    unsigned int seed
 ) {
     if (intervalSteps == 0) {
         throw std::invalid_argument(
@@ -63,12 +64,14 @@ void Simulation::configureVehicleGeneration(
     maxGeneratedVehicles_ = maxVehicles;
     generatedVehicles_ = 0;
     stepsSinceGeneration_ = 0;
+    routeRandom_.seed(seed);
 }
 
 void Simulation::configureVehicleGeneration(
     std::vector<std::vector<std::string>> routes,
     TrafficDensity density,
-    std::size_t maxVehicles
+    std::size_t maxVehicles,
+    unsigned int seed
 ) {
     std::size_t intervalSteps = 2;
     switch (density) {
@@ -76,7 +79,7 @@ void Simulation::configureVehicleGeneration(
         case TrafficDensity::Medium: intervalSteps = 2; break;
         case TrafficDensity::High: intervalSteps = 1; break;
     }
-    configureVehicleGeneration(std::move(routes), intervalSteps, maxVehicles);
+    configureVehicleGeneration(std::move(routes), intervalSteps, maxVehicles, seed);
 }
 
 void Simulation::generateVehicles() {
@@ -94,8 +97,8 @@ void Simulation::generateVehicles() {
 
     stepsSinceGeneration_ = 0;
 
-    const auto& route =
-        generationRoutes_[generatedVehicles_ % generationRoutes_.size()];
+    std::uniform_int_distribution<std::size_t> chooseRoute(0, generationRoutes_.size() - 1);
+    const auto& route = generationRoutes_[chooseRoute(routeRandom_)];
 
     std::string id;
 
