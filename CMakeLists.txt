@@ -28,3 +28,6 @@ add_test(NAME simulation_tests COMMAND simulation_tests)
 
 add_executable(performance_benchmark src/performance_benchmark.cpp)
 target_link_libraries(performance_benchmark PRIVATE traffic_core)
+
+add_executable(reliability_benchmark src/reliability_benchmark.cpp)
+target_link_libraries(reliability_benchmark PRIVATE traffic_core)
