@@ -11,7 +11,7 @@
 
 The STP exit criterion is at least 80% line coverage and 70% branch coverage for core modules. For the SRS/STP core implementation set (Road, Intersection, Vehicle, Simulation incident/analytics orchestration and signal-control module), executable entry points and configuration parser/network infrastructure are excluded.
 
-- **Aggregate core line coverage:** 84.32% (468 / 555) — above 80%; however Road.cpp (61.5%) and signal.cpp (75.0%) are below 80% individually.
+- **Aggregate core line coverage:** 84.32% (468 / 555) — above 80%; however signal.cpp (76.6%) are below 80% individually.
 - **Branch coverage:** 51.23% (417 / 814) — does not meet the 70% target.
 
 ## Per-file line coverage
