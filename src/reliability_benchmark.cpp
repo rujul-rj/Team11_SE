@@ -1,6 +1,7 @@
 #include "Simulation.h"
 
 #include <cmath>
+#include <exception>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -72,7 +73,7 @@ int main() {
               << " steps each; all-roads-blocked stress scenario completed.\n";
     return 0;
     } catch (const std::exception& error) {
-        std::cerr << "Reliability benchmark failed: " << error.what() << '\\n';
+        std::cerr << "Reliability benchmark failed: " << error.what() << '\n';
         return 3;
     }
 }
