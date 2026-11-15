@@ -177,6 +177,23 @@ void testAutomaticGenerationRejectsZeroInterval() {
     require(threw, "Generator should reject a zero interval");
 }
 
+void testGenerationSeedReproducibility() {
+    auto runWithSeed = [](unsigned int seed) {
+        Simulation simulation(makeNetwork());
+        simulation.configureVehicleGeneration(
+            {{"A", "B", "C"}, {"A", "B"}},
+            TrafficDensity::High,
+            10,
+            seed
+        );
+        simulation.run(10);
+        std::vector<std::vector<std::string>> routes;
+        for (const auto& vehicle : simulation.vehicles()) routes.push_back(vehicle.route());
+        return routes;
+    };
+    require(runWithSeed(42) == runWithSeed(42),
+            "The same seed should reproduce the same generated routes");
+}
 void testTrafficDensityLevels() {
     auto countFor = [](TrafficDensity density) {
         Simulation simulation(makeNetwork());
@@ -259,7 +276,7 @@ int main() {
         testRoutesAndNetworkValidation(); testMovement(); testRoadCapacityReduction(); testRedAndBlockedQueues(); testInvalidRouteAndIdentifiers();
         testAutomaticGenerationInterval(); testAutomaticGenerationMaximum();
         testAutomaticGenerationRejectsInvalidRoute(); testAutomaticGenerationRejectsZeroInterval();
-        testTrafficDensityLevels();
+        testGenerationSeedReproducibility(); testTrafficDensityLevels();
         testConstructorBoundaries(); testSummaryEmptyShortAndNormal(); testConfigValidationAndParser();
         testFixedTime(); testAdaptive(); testEmergency(); testEmergencyVehicleIntegration(); testIntegrationAndInvalidLog();
         std::cout << "All simulation, generation, summary, and signal tests passed.\n"; return EXIT_SUCCESS;
