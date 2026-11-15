@@ -17,7 +17,7 @@ This document records differences between the approved SRS/SAD/STP baseline and 
 | NFR-002 reliability | 100 seeded runs of 300 steps plus all-roads-blocked stress scenario are executed in CI | PASS — 100/100 seeded runs and all-roads-blocked stress; see docs/RELIABILITY_REPORT.md |\n| NFR-003 / NFR-004 architecture | Simulation currently owns incident handling and analytics aggregation; separate IncidentManager and AnalyticsEngine classes are not present | Deviation from conceptual SAD components |
 | Test framework | Tests use a lightweight custom require() harness registered with CTest, not GoogleTest/GoogleMock as named in the SRS/STP | Tooling deviation; disclose or migrate |
 | CI/CD | GitHub Actions builds, tests, runs sanitizers and generates coverage artifacts; the STP mentions Jenkins | Tooling deviation; GitHub Actions is the active CI system |
-| Coverage exit criteria | Line coverage excluding executable entry points is above 80%; branch coverage is below the STP's 70% target | Not fully satisfied; further branch tests required |
+| Coverage exit criteria | Aggregate core line coverage is 97.85%; aggregate core branch coverage is 70.02% (570/814) | Aggregate thresholds met; signal.cpp is 67.0% individually, so confirm whether per-module branch threshold is required |
 | Usability walkthrough | CLI instructions exist; three first-time users have not been observed completing the workflow | Manual validation remains |
 
 ## Final-evaluation rule
