@@ -312,8 +312,15 @@ void testPersistentInvalidConfigurationLogging() {
     std::istringstream malformed("intersection A strategy fixed all_red 1\nphase A X green nope yellow 2 roads AB\n");
     const auto second = manager.configure_from_stream(malformed, "source\nFORGED");
     require(!second.ok, "malformed signal file should be rejected");
-    require(manager.invalid_attempt_log().size() >= 2,
-            "each invalid attempt should be recorded");
+    auto thirdInvalid = cfg();
+    thirdInvalid.intersection_id = "BAD\\nFORGED";
+    const auto third = manager.configure(thirdInvalid);
+    require(!third.ok, "invalid intersection identifier should be rejected");
+    require(manager.invalid_attempt_log().size() == 3,
+            "exactly three invalid attempts should create exactly three log entries");
+    const auto persistedText = persisted.str();
+    require(std::count(persistedText.begin(), persistedText.end(), '\\n') == 3,
+            "persistent sink should contain exactly three audit lines");
     require(persisted.str().find("INVALID_CONFIG") != std::string::npos,
             "log sink should receive invalid configuration entries");
     require(persisted.str().find("\nFORGED") == std::string::npos,
