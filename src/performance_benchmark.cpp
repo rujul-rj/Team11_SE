@@ -106,8 +106,13 @@ bool runScenario(const std::string& name, bool adaptive, bool incidentAndEmergen
 }
 
 int main() {
-    const bool baseline = runScenario("TC-013.1 baseline", false, false);
-    const bool adaptive = runScenario("TC-013.2 adaptive", true, false);
-    const bool incidentEmergency = runScenario("TC-013.3 incidents+emergency", true, true);
-    return baseline && adaptive && incidentEmergency ? 0 : 1;
+    try {
+        const bool baseline = runScenario("TC-013.1 baseline", false, false);
+        const bool adaptive = runScenario("TC-013.2 adaptive", true, false);
+        const bool incidentEmergency = runScenario("TC-013.3 incidents+emergency", true, true);
+        return baseline && adaptive && incidentEmergency ? 0 : 1;
+    } catch (const std::exception& error) {
+        std::cerr << "Performance benchmark failed: " << error.what() << '\\n';
+        return 2;
+    }
 }
