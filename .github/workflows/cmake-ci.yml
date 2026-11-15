@@ -114,3 +114,17 @@ jobs:
           cmake --version
       - name: Run TC-013.1, TC-013.2 and TC-013.3 benchmarks 10 times each
         run: ./build-release/performance_benchmark
+
+  static-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Install cppcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cppcheck
+      - name: Run cppcheck
+        run: |
+          cppcheck --version
+          cppcheck --enable=warning,performance,portability --inline-suppr --suppress=missingIncludeSystem --error-exitcode=1 --std=c++17 -I include -I . include src tms
