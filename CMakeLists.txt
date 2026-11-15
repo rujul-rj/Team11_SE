@@ -25,3 +25,6 @@ enable_testing()
 add_executable(simulation_tests tests/simulation_tests.cpp)
 target_link_libraries(simulation_tests PRIVATE traffic_core)
 add_test(NAME simulation_tests COMMAND simulation_tests)
+
+add_executable(performance_benchmark src/performance_benchmark.cpp)
+target_link_libraries(performance_benchmark PRIVATE traffic_core)
