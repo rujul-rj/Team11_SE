@@ -8,7 +8,7 @@ The application is a single-process C++17 simulation. Security controls are appl
 2. **Network boundary:** parse_network_config() and TrafficNetwork::addIntersection(), addRoad() and isValidRoute() reject malformed directives, duplicate IDs, unknown endpoints, invalid lanes/capacities and invalid route references.
 3. **Simulation boundary:** Simulation rejects non-finite or non-positive time-step values, duplicate vehicle IDs, invalid routes and unknown road/intersection references.
 4. **Signal safety:** SignalController enforces GREEN → YELLOW → ALL_RED transitions; unknown roads fail safe to RED; emergency requests use the normal clearance sequence.
-5. **Diagnostics:** SignalManager records invalid configuration attempts in invalid_attempt_log(). The current log is in-memory, not a persistent audit file.
+5. **Diagnostics:** SignalManager records invalid configuration attempts in invalid_attempt_log(). The sample application appends timestamped, newline-sanitized records to logs/invalid-config.log; the log is ignored by Git and no rotation/retention policy is implemented.
 6. **Runtime verification:** CI runs AddressSanitizer and UndefinedBehaviorSanitizer against the automated test suite.
 
 ## Architectural pattern
