@@ -18,6 +18,6 @@ This is the concise final-evaluation matrix (10 grouped cases) derived from the 
 ## Final execution record
 
 - Final branch: final-evaluation-prep
-- Latest validated commit at time of report: 6611142d24af6c5f02a2dd65f143a3dc60ddf21c
-- Automated build, CTest, sanitizer, repeat-run and baseline performance jobs: [GitHub Actions run 43694595234](https://github.com/rujul-rj/Team11_SE/actions/runs/43692880777)
+- Latest validated commit at time of report: bc2a643ff1067350b0a949dd8233ba3db12a677f
+- Automated build, CTest, sanitizer, repeat-run and baseline performance jobs: [GitHub Actions run 43695727436](https://github.com/rujul-rj/Team11_SE/actions/runs/43692880777)
 - The current PR continues to evolve; rerun the full matrix against the final merged commit and update the commit SHA before submission.
