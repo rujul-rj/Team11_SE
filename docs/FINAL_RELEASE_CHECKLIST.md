@@ -1,14 +1,16 @@
 # Final Release Checklist (excluding demo videos)
 
 ## Repository and integration
-- [x] Recovery implementation from PR #42 has been carried onto the current mainline in the final-evaluation-prep branch and proposed in PR #43.
-- [ ] Review and merge PR #43; it is intentionally left open for repository-owner review.
-- [ ] Close PR #42 as superseded only after PR #43 is approved and merged.
-- [x] Create docs/BACKLOG_RECONCILIATION.md with a per-issue ready-to-close / keep-open map for the 40 open backlog issues.
-- [ ] After PR #43 is merged, close verified completed issues and update the GitHub Project board.
+- [x] Recovery implementation and final QA changes merged into main through PR #43.
+- [x] PR #43 reviewed against the final QA evidence and merged into main.
+- [x] PR #42 closed as superseded after verifying its recovery work is included in PR #43.
+- [x] Create docs/BACKLOG_RECONCILIATION.md; 30 issues closed after merge and 10 remaining issues retained with explicit reasons.
+- [x] Close 30 completed/duplicate issues after PR #43 merge.
+- [ ] Update the GitHub Project board to reflect the 10 remaining open issues.
 - [x] README now documents clean build, test, run, configuration, performance and reliability workflows.
 - [ ] Verify a clean clone/build/run on a second machine.
-- [ ] Record the final merged commit SHA and create a release tag after sign-off.
+- [x] Record final merge commit: 0111898c3cf2b7437f27f976ef3818b13e88dabf.
+- [ ] Create a release tag after the remaining human sign-offs.
 
 ## Requirements and design documents
 - [x] Added SRS security-objectives addendum and SAD security/API/error-handling addendum.
