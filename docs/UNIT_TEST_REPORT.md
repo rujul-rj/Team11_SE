@@ -41,7 +41,7 @@ cmake --build build --parallel
 ctest --test-dir build --output-on-failure
 ```
 
-**Final execution result:** Pending the final branch CI run. Populate this section with the actual CTest summary, commit SHA, timestamp and workflow URL. The test inventory above is not itself proof of a passing execution.
+**Final execution result:** PASS on Ubuntu GitHub Actions, 15 November 2026, commit `4ca98fb5e4858d58ecad7e955f6d4ed8be7be5b8`. CTest reported `1/1` test executable passed and `100% tests passed`. The test executable runs the 11 groups listed above. AddressSanitizer/UndefinedBehaviorSanitizer build and test job also passed. Workflow: [run 43692422652](https://github.com/rujul-rj/Team11_SE/actions/runs/43692422652).
 
 ## 5. Conclusion
 
