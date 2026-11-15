@@ -2,9 +2,9 @@ name: C++ CMake CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, feature/core-simulation]
   pull_request:
-    branches: [main]
+    branches: [main, feature/core-simulation]
   workflow_dispatch:
 
 jobs:
@@ -15,22 +15,50 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up CMake
-        if: hashFiles('CMakeLists.txt') != ''
         uses: lukka/get-cmake@latest
 
       - name: Configure
-        if: hashFiles('CMakeLists.txt') != ''
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
 
       - name: Build
-        if: hashFiles('CMakeLists.txt') != ''
         run: cmake --build build --parallel 2
 
       - name: Run tests
-        if: hashFiles('CMakeLists.txt') != ''
         run: ctest --test-dir build --output-on-failure
 
-      - name: Source-tree readiness check
-        if: hashFiles('CMakeLists.txt') == ''
+      - name: Run simulation demo
+        run: ./build/traffic_sim
+
+      - name: Run strategy comparison
+        run: ./build/strategy_comparison
+
+      - name: Repeat demos to check for crashes or leaked run state
+        shell: bash
         run: |
-          echo "::warning::No root CMakeLists.txt exists yet. The repository currently contains project PDFs and planning files only; commit the C++ source, CMakeLists.txt and GoogleTest targets to activate build/test steps."
+          for run in {1..10}; do
+            ./build/traffic_sim > /dev/null
+            ./build/strategy_comparison > /dev/null
+          done
+          echo "Both executables completed 10 consecutive runs."
+
+  sanitizers:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Configure AddressSanitizer and UndefinedBehaviorSanitizer build
+        run: >-
+          cmake -S . -B build-sanitize
+          -DCMAKE_BUILD_TYPE=Debug
+          -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer"
+          -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+
+      - name: Build sanitized targets
+        run: cmake --build build-sanitize --parallel 2
+
+      - name: Run sanitized tests
+        run: ctest --test-dir build-sanitize --output-on-failure
