@@ -1,4 +1,5 @@
 #include "Simulation.h"
+#include "network_config_parser.h"
 #include "tms/signals/signal.hpp"
 #include <cmath>
 #include <cstdlib>
@@ -21,6 +22,40 @@ tms::signals::IntersectionSignalConfig cfg() {
     c.phases = {{"NS", {"AB"}, 5, 2}, {"EW", {"AX"}, 7, 2}};
     c.all_red_s = 1; c.adaptive.min_green_s = 5; c.adaptive.max_green_s = 8; c.adaptive.extension_threshold = 1;
     return c;
+}
+void testNetworkConfigParser() {
+    std::istringstream valid(
+        "# sample topology\n"
+        "intersection A\n"
+        "intersection B\n"
+        "intersection C\n"
+        "road R1 A B 2 40\n"
+        "road R2 B C 1\n"
+    );
+    auto parsed = parse_network_config(valid);
+    require(parsed.ok, "valid network configuration should parse");
+    require(parsed.network.isValidRoute({"A", "B", "C"}),
+            "parsed network should contain connected route");
+    require(parsed.network.findRoad("A", "B")->capacity() == 40,
+            "explicit road capacity should be retained");
+    require(parsed.network.findRoad("B", "C")->capacity() == 20,
+            "default road capacity should derive from lane count");
+
+    std::istringstream invalid(
+        "intersection A\n"
+        "road R1 A Z 1\n"
+        "road R2 A A 1\n"
+        "road R3 A B 0\n"
+        "unknown directive\n"
+    );
+    auto rejected = parse_network_config(invalid);
+    require(!rejected.ok && rejected.errors.size() >= 4,
+            "unknown endpoints, self roads, zero lanes and unknown directives should be rejected");
+
+    std::istringstream empty;
+    auto emptyResult = parse_network_config(empty);
+    require(!emptyResult.ok && !emptyResult.errors.empty(),
+            "empty network configuration should be rejected");
 }
 void testRoutesAndNetworkValidation() {
     auto n = makeNetwork();
@@ -273,7 +308,7 @@ void testIntegrationAndInvalidLog() {
 }
 int main() {
     try {
-        testRoutesAndNetworkValidation(); testMovement(); testRoadCapacityReduction(); testRedAndBlockedQueues(); testInvalidRouteAndIdentifiers();
+        testNetworkConfigParser(); testRoutesAndNetworkValidation(); testMovement(); testRoadCapacityReduction(); testRedAndBlockedQueues(); testInvalidRouteAndIdentifiers();
         testAutomaticGenerationInterval(); testAutomaticGenerationMaximum();
         testAutomaticGenerationRejectsInvalidRoute(); testAutomaticGenerationRejectsZeroInterval();
         testGenerationSeedReproducibility(); testTrafficDensityLevels();
