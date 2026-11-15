@@ -20,10 +20,10 @@
 - [ ] Update the original STP test cases and obtain faculty/team approval for documented deviations.
 
 ## QA evidence
-- [x] Unit Test Report updated; 20 test functions pass under CTest on the CI commit.
+- [x] Unit Test Report updated; 21 test functions pass under CTest on the CI commit.
 - [x] System Validation Report updated with main simulation, emergency, incident and strategy-comparison evidence.
 - [x] Code Coverage Report generated; aggregate core line coverage 83.70%.
-- [x] Branch Coverage Report generated; 49.87%, below the STP 70% target. More branch tests are required.
+- [x] Branch Coverage Report generated; 51.23%, below the STP 70% target. More branch tests are required.
 - [x] cppcheck 2.19.0 static-analysis job passes.
 - [x] AddressSanitizer and UndefinedBehaviorSanitizer job passes.
 - [x] TC-013.1, TC-013.2 and TC-013.3 performance workloads each pass 10 repetitions on the hosted x86_64 4-CPU / 15-GiB runner.
