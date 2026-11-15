@@ -1,6 +1,7 @@
 #include "Simulation.h"
 #include "network_config_parser.h"
 #include "tms/signals/signal.hpp"
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
