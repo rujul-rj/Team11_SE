@@ -23,7 +23,7 @@ This addendum corrects the current STP structure. The faculty checklist requires
 |---|---|---|---|
 | SEC-TC-001 | Submit malformed signal configuration: unknown strategy, malformed integer, undeclared intersection, invalid phase or road | Entire invalid configuration is rejected; no partial configuration is applied | Automated parser/validation tests pass in CI |
 | SEC-TC-002 | Submit invalid signal timings, negative queue values, zero/non-finite simulation step and invalid vehicle routes | Invalid values are rejected and valid state remains unchanged | Automated boundary tests pass in CI; density is enum-constrained |
-| SEC-TC-003 | Run warning-enabled build and AddressSanitizer/UndefinedBehaviorSanitizer tests; run cppcheck or equivalent | No memory-safety findings and no unresolved critical static-analysis findings | ASan/UBSan CI passes; static-analysis job still required |
+| SEC-TC-003 | Run warning-enabled build and AddressSanitizer/UndefinedBehaviorSanitizer tests; run cppcheck or equivalent | No memory-safety findings and no unresolved critical static-analysis findings | PASS: cppcheck 2.19.0 and ASan/UBSan CI |
 | SEC-TC-004 | Submit invalid signal configuration and inspect SignalManager invalid_attempt_log() | Rejection reason is recorded for review | Automated in-memory logging test passes; persistent timestamped log is not yet implemented |
 
 ### 5.1.4 Entry and exit criteria
