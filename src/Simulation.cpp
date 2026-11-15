@@ -191,6 +191,16 @@ void Simulation::step() {
             *next
         );
 
+        if (vehicle.isEmergency() && road && signalManager_.has(current->id()) &&
+            emergencyRequests_.find(vehicle.id()) == emergencyRequests_.end()) {
+            if (emergencyArrived(current->id(), road->id())) {
+                emergencyRequests_.emplace(
+                    vehicle.id(),
+                    std::make_pair(current->id(), road->id())
+                );
+            }
+        }
+
         bool allowed = current->signalState() != SignalState::Red;
 
         if (signalManager_.has(current->id())) {
@@ -205,6 +215,14 @@ void Simulation::step() {
         }
 
         vehicle.moveToNextIntersection();
+
+        const auto emergencyRequest = emergencyRequests_.find(vehicle.id());
+        if (emergencyRequest != emergencyRequests_.end() &&
+            emergencyRequest->second.first == current->id() &&
+            emergencyRequest->second.second == road->id()) {
+            emergencyPassed(emergencyRequest->second.first, emergencyRequest->second.second);
+            emergencyRequests_.erase(emergencyRequest);
+        }
 
         if (vehicle.hasArrived()) {
             ++lastStepStats_.throughput;
