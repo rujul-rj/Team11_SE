@@ -15,12 +15,26 @@ int main() {
 
         network.addRoad(Road("R1", "A", "B", 2));
         network.addRoad(Road("R2", "B", "C", 1));
+        network.addRoad(Road("R3", "A", "C", 1));
 
         Simulation simulation(network, 1.0);
+
+        tms::signals::IntersectionSignalConfig signalConfig;
+        signalConfig.intersection_id = "A";
+        signalConfig.phases = {
+            {"AB", {"R1"}, 5, 2},
+            {"AC", {"R3"}, 5, 2}
+        };
+        signalConfig.all_red_s = 1;
+        const auto signalResult = simulation.configureSignal(signalConfig);
+        if (!signalResult.ok) {
+            throw std::runtime_error("Signal configuration failed.");
+        }
 
         // Add two initial vehicles manually.
         simulation.addVehicle(Vehicle("V1", {"A", "B", "C"}));
         simulation.addVehicle(Vehicle("V2", {"A", "B", "C"}));
+        simulation.addVehicle(Vehicle("EV1", {"A", "C"}, VehicleType::Emergency));
 
         // Automatically generate up to 5 more vehicles,
         // one every 2 simulation steps.
@@ -35,7 +49,7 @@ int main() {
 
         std::cout << "Traffic Management System Simulation\n";
         std::cout << "Scenario: A -> B -> C\n";
-        std::cout << "Initial vehicles: 2\n";
+        std::cout << "Initial vehicles: 2 normal + 1 emergency\n";
         std::cout << "Automatic generation: MEDIUM density, max 5\n\n";
 
         for (int tick = 1; tick <= 12; ++tick) {
