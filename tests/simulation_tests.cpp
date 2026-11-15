@@ -497,7 +497,7 @@ void testSignalManagerFacadeBranches() {
     manager.set_strategy_all(Strategy::ADAPTIVE);
     require(manager.get("A")->strategy() == Strategy::ADAPTIVE,
             "set_strategy_all should update all configured controllers");
-    manager.tick(5);
+    manager.tick(10);
     require(!manager.can_proceed("A", "AB"),
             "approach should not proceed during adaptive yellow clearance");
     manager.set_strategy_all(Strategy::FIXED_TIME);
