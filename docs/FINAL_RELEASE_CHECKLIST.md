@@ -23,8 +23,8 @@
 ## QA evidence
 - [x] Unit Test Report updated; 28 test functions pass under CTest on the CI commit.
 - [x] System Validation Report updated with main simulation, emergency, incident and strategy-comparison evidence.
-- [x] Code Coverage Report generated; aggregate core line coverage 84.32%.
-- [x] Branch Coverage Report generated; 51.23%, below the STP 70% target. More branch tests are required.
+- [x] Code Coverage Report generated; aggregate core line coverage 97.85%.
+- [x] Branch Coverage Report generated; aggregate core branch coverage 70.02% (570/814), meeting the STP 70% target. signal.cpp is 67.0% individually; confirm whether the faculty expects a per-module threshold.
 - [x] cppcheck 2.19.0 static-analysis job passes.
 - [x] AddressSanitizer and UndefinedBehaviorSanitizer job passes.
 - [x] TC-013.1, TC-013.2 and TC-013.3 performance workloads each pass 10 repetitions on the hosted x86_64 4-CPU / 15-GiB runner.
