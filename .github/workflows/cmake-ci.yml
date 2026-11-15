@@ -2,9 +2,9 @@ name: C++ CMake CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, feature/core-simulation]
   pull_request:
-    branches: [main]
+    branches: [main, feature/core-simulation]
   workflow_dispatch:
 
 jobs:
@@ -15,22 +15,130 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up CMake
-        if: hashFiles('CMakeLists.txt') != ''
         uses: lukka/get-cmake@latest
 
       - name: Configure
-        if: hashFiles('CMakeLists.txt') != ''
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
 
       - name: Build
-        if: hashFiles('CMakeLists.txt') != ''
         run: cmake --build build --parallel 2
 
       - name: Run tests
-        if: hashFiles('CMakeLists.txt') != ''
         run: ctest --test-dir build --output-on-failure
 
-      - name: Source-tree readiness check
-        if: hashFiles('CMakeLists.txt') == ''
+      - name: Run simulation demo
+        run: ./build/traffic_sim
+
+      - name: Run strategy comparison
+        run: ./build/strategy_comparison
+
+      - name: Repeat demos to check for crashes or leaked run state
+        shell: bash
         run: |
-          echo "::warning::No root CMakeLists.txt exists yet. The repository currently contains project PDFs and planning files only; commit the C++ source, CMakeLists.txt and GoogleTest targets to activate build/test steps."
+          for run in {1..10}; do
+            ./build/traffic_sim > /dev/null
+            ./build/strategy_comparison > /dev/null
+          done
+          echo "Both executables completed 10 consecutive runs."
+
+  sanitizers:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Configure AddressSanitizer and UndefinedBehaviorSanitizer build
+        run: >-
+          cmake -S . -B build-sanitize
+          -DCMAKE_BUILD_TYPE=Debug
+          -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer"
+          -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+
+      - name: Build sanitized targets
+        run: cmake --build build-sanitize --parallel 2
+
+      - name: Run sanitized tests
+        run: ctest --test-dir build-sanitize --output-on-failure
+
+  coverage:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up CMake
+        uses: lukka/get-cmake@latest
+      - name: Install gcovr
+        run: python -m pip install gcovr
+      - name: Configure coverage build
+        run: >-
+          cmake -S . -B build-coverage -DCMAKE_BUILD_TYPE=Debug
+          -DCMAKE_CXX_FLAGS="--coverage -O0 -g"
+          -DCMAKE_EXE_LINKER_FLAGS="--coverage"
+      - name: Build and run tests
+        run: |
+          cmake --build build-coverage --parallel 2
+          ctest --test-dir build-coverage --output-on-failure
+      - name: Generate line and branch coverage reports
+        run: |
+          mkdir -p docs/coverage
+          gcovr --root . --filter 'src/.*' --filter 'tms/.*' --txt docs/coverage/coverage-summary.txt --html-details docs/coverage/index.html --xml docs/coverage/coverage.xml --xml-pretty
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: team11-coverage-reports
+          path: docs/coverage/
+          if-no-files-found: error
+
+  performance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up CMake
+        uses: lukka/get-cmake@latest
+      - name: Configure Release benchmark
+        run: cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release
+      - name: Build performance benchmark
+        run: cmake --build build-release --target performance_benchmark --parallel 2
+      - name: Record benchmark runner specifications
+        run: |
+          uname -a
+          lscpu
+          free -h
+          g++ --version
+          cmake --version
+      - name: Run TC-013.1, TC-013.2 and TC-013.3 benchmarks 10 times each
+        run: ./build-release/performance_benchmark
+
+  static-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Install cppcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cppcheck
+      - name: Run cppcheck
+        run: |
+          cppcheck --version
+          cppcheck --enable=warning,performance,portability --inline-suppr --suppress=missingIncludeSystem --error-exitcode=1 --std=c++17 -I include -I . include src tms
+
+  reliability:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up CMake
+        uses: lukka/get-cmake@latest
+      - name: Configure Release reliability build
+        run: cmake -S . -B build-reliability -DCMAKE_BUILD_TYPE=Release
+      - name: Build reliability benchmark
+        run: cmake --build build-reliability --target reliability_benchmark --parallel 2
+      - name: Run 100 seeded reliability scenarios and long-run stress
+        run: ./build-reliability/reliability_benchmark

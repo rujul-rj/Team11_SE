@@ -1,6 +1,10 @@
 #include "tms/signals/signal.hpp"
 
 #include <algorithm>
+#include <chrono>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
 #include <cctype>
 #include <istream>
 #include <set>
@@ -261,8 +265,20 @@ bool SignalController::invariants_hold() const {
 // SignalManager
 // ----------------------------------------------------------------------------
 void SignalManager::log_invalid(const std::string& source, const std::vector<std::string>& errors) {
+    const auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    std::ostringstream timestamp;
+    timestamp << std::put_time(std::localtime(&now), "%Y-%m-%dT%H:%M:%S");
+
+    const auto one_line = [](std::string value) {
+        for (char& ch : value) {
+            if (ch == '\n' || ch == '\r') ch = ' ';
+        }
+        return value;
+    };
+
     for (const auto& msg : errors) {
-        const std::string line = "INVALID_CONFIG [" + source + "]: " + msg;
+        const std::string line = timestamp.str() + " INVALID_CONFIG [" +
+            one_line(source) + "]: " + one_line(msg);
         log_.push_back(line);
         if (sink_) sink_(line);
     }

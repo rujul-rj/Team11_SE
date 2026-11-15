@@ -1,15 +1,16 @@
 
 #include "Simulation.h"
 
+#include <cmath>
 #include <map>
 #include <stdexcept>
 #include <utility>
 
 Simulation::Simulation(TrafficNetwork network, double stepSeconds)
     : network_(std::move(network)), stepSeconds_(stepSeconds) {
-    if (stepSeconds_ <= 0.0) {
+    if (!std::isfinite(stepSeconds_) || stepSeconds_ <= 0.0) {
         throw std::invalid_argument(
-            "Simulation step duration must be positive."
+            "Simulation step duration must be finite and positive."
         );
     }
 }
@@ -35,7 +36,8 @@ void Simulation::addVehicle(const Vehicle& vehicle) {
 void Simulation::configureVehicleGeneration(
     std::vector<std::vector<std::string>> routes,
     std::size_t intervalSteps,
-    std::size_t maxVehicles
+    std::size_t maxVehicles,
+    unsigned int seed
 ) {
     if (intervalSteps == 0) {
         throw std::invalid_argument(
@@ -62,6 +64,22 @@ void Simulation::configureVehicleGeneration(
     maxGeneratedVehicles_ = maxVehicles;
     generatedVehicles_ = 0;
     stepsSinceGeneration_ = 0;
+    routeRandom_.seed(seed);
+}
+
+void Simulation::configureVehicleGeneration(
+    std::vector<std::vector<std::string>> routes,
+    TrafficDensity density,
+    std::size_t maxVehicles,
+    unsigned int seed
+) {
+    std::size_t intervalSteps = 2;
+    switch (density) {
+        case TrafficDensity::Low: intervalSteps = 4; break;
+        case TrafficDensity::Medium: intervalSteps = 2; break;
+        case TrafficDensity::High: intervalSteps = 1; break;
+    }
+    configureVehicleGeneration(std::move(routes), intervalSteps, maxVehicles, seed);
 }
 
 void Simulation::generateVehicles() {
@@ -79,8 +97,8 @@ void Simulation::generateVehicles() {
 
     stepsSinceGeneration_ = 0;
 
-    const auto& route =
-        generationRoutes_[generatedVehicles_ % generationRoutes_.size()];
+    std::uniform_int_distribution<std::size_t> chooseRoute(0, generationRoutes_.size() - 1);
+    const auto& route = generationRoutes_[chooseRoute(routeRandom_)];
 
     std::string id;
 
@@ -152,6 +170,7 @@ void Simulation::refreshSignalQueues() {
 
 void Simulation::step() {
     lastStepStats_ = {};
+    std::map<std::string, std::size_t> roadUsage;
 
     // Generate new traffic before updating queues and moving vehicles.
     generateVehicles();
@@ -176,6 +195,16 @@ void Simulation::step() {
             *next
         );
 
+        if (vehicle.isEmergency() && road && signalManager_.has(current->id()) &&
+            emergencyRequests_.find(vehicle.id()) == emergencyRequests_.end()) {
+            if (emergencyArrived(current->id(), road->id())) {
+                emergencyRequests_.emplace(
+                    vehicle.id(),
+                    std::make_pair(current->id(), road->id())
+                );
+            }
+        }
+
         bool allowed = current->signalState() != SignalState::Red;
 
         if (signalManager_.has(current->id())) {
@@ -183,13 +212,25 @@ void Simulation::step() {
                 signalManager_.can_proceed(current->id(), road->id());
         }
 
-        if (!road || road->isBlocked() || !allowed) {
+        const bool capacityAvailable = road &&
+            roadUsage[road->id()] < static_cast<std::size_t>(road->effectiveCapacity());
+
+        if (!road || road->isBlocked() || !allowed || !capacityAvailable) {
             vehicle.waitOneStep(stepSeconds_);
             ++lastStepStats_.queuedVehicles;
             continue;
         }
 
+        ++roadUsage[road->id()];
         vehicle.moveToNextIntersection();
+
+        const auto emergencyRequest = emergencyRequests_.find(vehicle.id());
+        if (emergencyRequest != emergencyRequests_.end() &&
+            emergencyRequest->second.first == current->id() &&
+            emergencyRequest->second.second == road->id()) {
+            emergencyPassed(emergencyRequest->second.first, emergencyRequest->second.second);
+            emergencyRequests_.erase(emergencyRequest);
+        }
 
         if (vehicle.hasArrived()) {
             ++lastStepStats_.throughput;
@@ -215,6 +256,10 @@ void Simulation::step() {
         lastStepStats_.totalWaitingTimeSeconds +=
             vehicle.waitingTimeSeconds();
     }
+
+    ++stepsExecuted_;
+    cumulativeQueuedVehicles_ += lastStepStats_.queuedVehicles;
+    cumulativeWaitingTimeSeconds_ = lastStepStats_.totalWaitingTimeSeconds;
 }
 
 void Simulation::run(std::size_t steps) {
@@ -252,6 +297,18 @@ void Simulation::setRoadBlocked(
     }
 
     road->setBlocked(blocked);
+}
+
+void Simulation::setRoadCapacityReduction(
+    const std::string& from,
+    const std::string& to,
+    double factor
+) {
+    auto* road = network_.findRoad(from, to);
+    if (!road) {
+        throw std::invalid_argument("Unknown road: " + from + " -> " + to);
+    }
+    road->setCapacityReductionFactor(factor);
 }
 
 tms::signals::ValidationResult Simulation::configureSignal(
@@ -332,4 +389,26 @@ const SimulationStats& Simulation::lastStepStats() const noexcept {
 
 std::size_t Simulation::totalArrived() const noexcept {
     return totalArrived_;
+}
+
+
+std::size_t Simulation::stepsExecuted() const noexcept {
+    return stepsExecuted_;
+}
+
+SimulationSummary Simulation::summary() const noexcept {
+    SimulationSummary result;
+    result.stepsExecuted = stepsExecuted_;
+    result.vehiclesAdded = vehicles_.size();
+    result.totalArrived = totalArrived_;
+    result.activeVehicles = vehicles_.size() - totalArrived_;
+    result.totalWaitingTimeSeconds = cumulativeWaitingTimeSeconds_;
+    result.averageWaitingTimeSeconds = vehicles_.empty() ? 0.0
+        : cumulativeWaitingTimeSeconds_ / static_cast<double>(vehicles_.size());
+    result.averageQueueLength = stepsExecuted_ == 0 ? 0.0
+        : static_cast<double>(cumulativeQueuedVehicles_) / static_cast<double>(stepsExecuted_);
+    const double elapsedSeconds = static_cast<double>(stepsExecuted_) * stepSeconds_;
+    result.throughputVehiclesPerSecond = elapsedSeconds <= 0.0 ? 0.0
+        : static_cast<double>(totalArrived_) / elapsedSeconds;
+    return result;
 }

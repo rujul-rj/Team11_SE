@@ -2,8 +2,8 @@
 #include <stdexcept>
 #include <utility>
 
-Vehicle::Vehicle(std::string id, std::vector<std::string> route)
-    : id_(std::move(id)), route_(std::move(route)) {
+Vehicle::Vehicle(std::string id, std::vector<std::string> route, VehicleType type)
+    : id_(std::move(id)), route_(std::move(route)), type_(type) {
     if (id_.empty()) throw std::invalid_argument("Vehicle ID must not be empty.");
     if (route_.empty()) throw std::invalid_argument("Vehicle route must contain an intersection.");
     for (const auto& stop : route_) {
@@ -19,6 +19,8 @@ const std::string* Vehicle::nextIntersection() const noexcept {
     return &route_[routeIndex_ + 1];
 }
 double Vehicle::waitingTimeSeconds() const noexcept { return waitingTimeSeconds_; }
+VehicleType Vehicle::type() const noexcept { return type_; }
+bool Vehicle::isEmergency() const noexcept { return type_ == VehicleType::Emergency; }
 void Vehicle::moveToNextIntersection() {
     if (!hasArrived()) ++routeIndex_;
 }

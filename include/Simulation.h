@@ -6,14 +6,29 @@
 #include "tms/signals/signal.hpp"
 
 #include <cstddef>
+#include <map>
+#include <random>
 #include <string>
 #include <vector>
+
+enum class TrafficDensity { Low, Medium, High };
 
 struct SimulationStats {
     std::size_t activeVehicles{0};
     std::size_t queuedVehicles{0};
     std::size_t throughput{0};
     double totalWaitingTimeSeconds{0.0};
+};
+
+struct SimulationSummary {
+    std::size_t stepsExecuted{0};
+    std::size_t vehiclesAdded{0};
+    std::size_t totalArrived{0};
+    std::size_t activeVehicles{0};
+    double totalWaitingTimeSeconds{0.0};
+    double averageWaitingTimeSeconds{0.0};
+    double averageQueueLength{0.0};
+    double throughputVehiclesPerSecond{0.0};
 };
 
 class Simulation {
@@ -25,7 +40,14 @@ public:
     void configureVehicleGeneration(
         std::vector<std::vector<std::string>> routes,
         std::size_t intervalSteps,
-        std::size_t maxVehicles
+        std::size_t maxVehicles,
+        unsigned int seed = 42
+    );
+    void configureVehicleGeneration(
+        std::vector<std::vector<std::string>> routes,
+        TrafficDensity density,
+        std::size_t maxVehicles,
+        unsigned int seed = 42
     );
 
     void step();
@@ -36,6 +58,11 @@ public:
         const std::string& from,
         const std::string& to,
         bool blocked
+    );
+    void setRoadCapacityReduction(
+        const std::string& from,
+        const std::string& to,
+        double factor
     );
 
     tms::signals::ValidationResult configureSignal(
@@ -59,6 +86,8 @@ public:
     const std::vector<Vehicle>& vehicles() const noexcept;
     const SimulationStats& lastStepStats() const noexcept;
     std::size_t totalArrived() const noexcept;
+    std::size_t stepsExecuted() const noexcept;
+    SimulationSummary summary() const noexcept;
 
 private:
     void generateVehicles();
@@ -72,6 +101,10 @@ private:
     tms::signals::SignalManager signalManager_;
 
     std::size_t totalArrived_{0};
+    std::size_t stepsExecuted_{0};
+    std::size_t cumulativeQueuedVehicles_{0};
+    double cumulativeWaitingTimeSeconds_{0.0};
+    std::map<std::string, std::pair<std::string, std::string>> emergencyRequests_;
     std::size_t nextVehicleNumber_{1};
 
     SimulationStats lastStepStats_;
@@ -81,4 +114,5 @@ private:
     std::size_t maxGeneratedVehicles_{0};
     std::size_t generatedVehicles_{0};
     std::size_t stepsSinceGeneration_{0};
+    std::mt19937 routeRandom_{42};
 };
